@@ -1,0 +1,17 @@
+{
+  "started_at": "2026-05-15T01:53:32.315050+00:00",
+  "finished_at": "2026-05-15T01:53:32.315050+00:00",
+  "fixtures_root": "C:\\Users\\user\\Documents\\doc_parcer\\benchmarks\\fixtures",
+  "adapter_availability": {
+    "markitdown": true,
+    "marker": false,
+    "docling": false,
+    "unstructured": false,
+    "legacy_file_parser": true
+  },
+  "fixtures": [
+    "README.md"
+  ],
+  "runs": [],
+  "summary": {}
+}

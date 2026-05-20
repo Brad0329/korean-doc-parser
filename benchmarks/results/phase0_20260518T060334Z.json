@@ -1,0 +1,273 @@
+{
+  "started_at": "2026-05-18T05:56:39.289450+00:00",
+  "finished_at": "2026-05-18T06:03:34.677464+00:00",
+  "fixtures_root": "C:\\Users\\user\\Documents\\doc_parcer\\samples",
+  "adapter_availability": {
+    "markitdown": true,
+    "marker": false,
+    "docling": false,
+    "unstructured": false,
+    "legacy_file_parser": true
+  },
+  "fixtures": [
+    "16.08.17 3억초과 개인사업자 대형가맹점 리스트 관련 유권해석.docx",
+    "16.09.27 청탁금지법상 '공무수행사인' 범위에 대한 질의.docx",
+    "3. 정성적 제안서_창업역량강화교육프로그램운영용역_(주)렛츠_231030-02.hwp",
+    "●제안서(최종)_한국관광공사_성장 관광벤처기업 교육 컨설팅_(주)렛츠_20210509-2.pptx",
+    "스테이블코인 법제화 과제와 금융권의 대응방안_20250424.pdf",
+    "키움증권_스테이블코인.pdf"
+  ],
+  "runs": [
+    {
+      "adapter": "markitdown",
+      "fixture": "16.08.17 3억초과 개인사업자 대형가맹점 리스트 관련 유권해석.docx",
+      "extension": ".docx",
+      "ok": true,
+      "duration_ms": 327.96339999185875,
+      "peak_mem_mb": 1.9265775680541992,
+      "text_length": 1324,
+      "table_count": 0,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 1.0,
+        "matched_keywords": 4,
+        "expected_keywords": 4,
+        "table_accuracy": 1.0,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 1.0,
+        "composite": 1.0
+      }
+    },
+    {
+      "adapter": "legacy_file_parser",
+      "fixture": "16.08.17 3억초과 개인사업자 대형가맹점 리스트 관련 유권해석.docx",
+      "extension": ".docx",
+      "ok": true,
+      "duration_ms": 300.71709997719154,
+      "peak_mem_mb": 3.1819772720336914,
+      "text_length": 1300,
+      "table_count": 0,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 1.0,
+        "matched_keywords": 4,
+        "expected_keywords": 4,
+        "table_accuracy": 1.0,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 1.0,
+        "composite": 1.0
+      }
+    },
+    {
+      "adapter": "markitdown",
+      "fixture": "16.09.27 청탁금지법상 '공무수행사인' 범위에 대한 질의.docx",
+      "extension": ".docx",
+      "ok": true,
+      "duration_ms": 374.8073999886401,
+      "peak_mem_mb": 2.8115625381469727,
+      "text_length": 3801,
+      "table_count": 0,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 0.75,
+        "matched_keywords": 3,
+        "expected_keywords": 4,
+        "table_accuracy": 1.0,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 1.0,
+        "composite": 0.9375
+      }
+    },
+    {
+      "adapter": "legacy_file_parser",
+      "fixture": "16.09.27 청탁금지법상 '공무수행사인' 범위에 대한 질의.docx",
+      "extension": ".docx",
+      "ok": true,
+      "duration_ms": 7.519999984651804,
+      "peak_mem_mb": 0.2675914764404297,
+      "text_length": 3777,
+      "table_count": 0,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 0.75,
+        "matched_keywords": 3,
+        "expected_keywords": 4,
+        "table_accuracy": 1.0,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 1.0,
+        "composite": 0.9375
+      }
+    },
+    {
+      "adapter": "legacy_file_parser",
+      "fixture": "3. 정성적 제안서_창업역량강화교육프로그램운영용역_(주)렛츠_231030-02.hwp",
+      "extension": ".hwp",
+      "ok": true,
+      "duration_ms": 63749.769299989566,
+      "peak_mem_mb": 25.218263626098633,
+      "text_length": 66144,
+      "table_count": 61,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 1.0,
+        "matched_keywords": 4,
+        "expected_keywords": 4,
+        "table_accuracy": 0.9634146341463414,
+        "image_accuracy": 0.6875,
+        "text_length_in_range": 0.0,
+        "composite": 0.6627286585365854
+      }
+    },
+    {
+      "adapter": "markitdown",
+      "fixture": "●제안서(최종)_한국관광공사_성장 관광벤처기업 교육 컨설팅_(주)렛츠_20210509-2.pptx",
+      "extension": ".pptx",
+      "ok": true,
+      "duration_ms": 1712.5376000185497,
+      "peak_mem_mb": 6.015897750854492,
+      "text_length": 23147,
+      "table_count": 13,
+      "image_count": 38,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 1.0,
+        "matched_keywords": 4,
+        "expected_keywords": 4,
+        "table_accuracy": 1.0,
+        "image_accuracy": 0.9,
+        "text_length_in_range": 0.0,
+        "composite": 0.725
+      }
+    },
+    {
+      "adapter": "legacy_file_parser",
+      "fixture": "●제안서(최종)_한국관광공사_성장 관광벤처기업 교육 컨설팅_(주)렛츠_20210509-2.pptx",
+      "extension": ".pptx",
+      "ok": true,
+      "duration_ms": 119.99230005312711,
+      "peak_mem_mb": 2.606595993041992,
+      "text_length": 170,
+      "table_count": 0,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 0.0,
+        "matched_keywords": 0,
+        "expected_keywords": 4,
+        "table_accuracy": 0.6153846153846154,
+        "image_accuracy": 0.6599999999999999,
+        "text_length_in_range": 0.0,
+        "composite": 0.31884615384615383
+      }
+    },
+    {
+      "adapter": "markitdown",
+      "fixture": "스테이블코인 법제화 과제와 금융권의 대응방안_20250424.pdf",
+      "extension": ".pdf",
+      "ok": true,
+      "duration_ms": 718.9880000078119,
+      "peak_mem_mb": 43.22222328186035,
+      "text_length": 0,
+      "table_count": 0,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 0.0,
+        "matched_keywords": 0,
+        "expected_keywords": 3,
+        "table_accuracy": 1.0,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 1.0,
+        "composite": 0.75
+      }
+    },
+    {
+      "adapter": "legacy_file_parser",
+      "fixture": "스테이블코인 법제화 과제와 금융권의 대응방안_20250424.pdf",
+      "extension": ".pdf",
+      "ok": true,
+      "duration_ms": 306.60350003745407,
+      "peak_mem_mb": 28.849251747131348,
+      "text_length": 99,
+      "table_count": 0,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 0.0,
+        "matched_keywords": 0,
+        "expected_keywords": 3,
+        "table_accuracy": 1.0,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 1.0,
+        "composite": 0.75
+      }
+    },
+    {
+      "adapter": "markitdown",
+      "fixture": "키움증권_스테이블코인.pdf",
+      "extension": ".pdf",
+      "ok": true,
+      "duration_ms": 225253.31800000276,
+      "peak_mem_mb": 203.55750370025635,
+      "text_length": 71524,
+      "table_count": 0,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 1.0,
+        "matched_keywords": 5,
+        "expected_keywords": 5,
+        "table_accuracy": 0.6136363636363636,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 1.0,
+        "composite": 0.9034090909090909
+      }
+    },
+    {
+      "adapter": "legacy_file_parser",
+      "fixture": "키움증권_스테이블코인.pdf",
+      "extension": ".pdf",
+      "ok": true,
+      "duration_ms": 121474.22139998525,
+      "peak_mem_mb": 230.33909702301025,
+      "text_length": 101095,
+      "table_count": 32,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 1.0,
+        "matched_keywords": 5,
+        "expected_keywords": 5,
+        "table_accuracy": 0.7954545454545454,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 0.0,
+        "composite": 0.6988636363636364
+      }
+    }
+  ],
+  "summary": {
+    "markitdown": {
+      "runs": 5,
+      "ok": 5,
+      "errors": 0,
+      "mean_duration_ms": 45677.522880001925,
+      "median_duration_ms": 718.9880000078119,
+      "mean_peak_mem_mb": 51.50675296783447,
+      "mean_composite": 0.8631818181818183
+    },
+    "legacy_file_parser": {
+      "runs": 6,
+      "ok": 6,
+      "errors": 0,
+      "mean_duration_ms": 30993.13726667121,
+      "median_duration_ms": 303.6603000073228,
+      "mean_peak_mem_mb": 48.410462856292725,
+      "mean_composite": 0.7279897414577293
+    }
+  }
+}

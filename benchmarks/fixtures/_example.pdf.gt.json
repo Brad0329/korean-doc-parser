@@ -1,0 +1,10 @@
+{
+  "expected_keywords": ["입찰공고", "낙찰자", "예정가격"],
+  "expected_table_count": 3,
+  "expected_image_count": 2,
+  "expected_text_length_range": [1500, 8000],
+  "tolerance": {"table": 1, "image": 2},
+  "_source": "예시 — 실제 픽스처에 대응되는 PDF 가 없으므로 runner 가 스킵합니다",
+  "_domain": "입찰공고",
+  "_notes": "스키마 참고용. 실제 픽스처 추가 시 이 파일은 지우거나 옆에 .pdf 를 두세요."
+}

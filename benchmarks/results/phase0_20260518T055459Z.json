@@ -1,0 +1,257 @@
+{
+  "started_at": "2026-05-18T05:48:08.551055+00:00",
+  "finished_at": "2026-05-18T05:54:59.614767+00:00",
+  "fixtures_root": "C:\\Users\\user\\Documents\\doc_parcer\\samples",
+  "adapter_availability": {
+    "markitdown": true,
+    "marker": false,
+    "docling": false,
+    "unstructured": false,
+    "legacy_file_parser": true
+  },
+  "fixtures": [
+    "16.08.17 3억초과 개인사업자 대형가맹점 리스트 관련 유권해석.docx",
+    "16.09.27 청탁금지법상 '공무수행사인' 범위에 대한 질의.docx",
+    "3. 정성적 제안서_창업역량강화교육프로그램운영용역_(주)렛츠_231030-02.hwp",
+    "●제안서(최종)_한국관광공사_성장 관광벤처기업 교육 컨설팅_(주)렛츠_20210509-2.pptx",
+    "스테이블코인 법제화 과제와 금융권의 대응방안_20250424.pdf",
+    "키움증권_스테이블코인.pdf"
+  ],
+  "runs": [
+    {
+      "adapter": "markitdown",
+      "fixture": "16.08.17 3억초과 개인사업자 대형가맹점 리스트 관련 유권해석.docx",
+      "extension": ".docx",
+      "ok": false,
+      "duration_ms": 306.80919997394085,
+      "peak_mem_mb": 0.33343982696533203,
+      "text_length": 0,
+      "table_count": 0,
+      "image_count": 0,
+      "error": "FileConversionException: File conversion failed after 1 attempts:\n - DocxConverter threw MissingDependencyException with message: DocxConverter recognized the input as a potential .docx file, but the dependencies needed to read .docx files have not been installed. To resolve this error, include the optional dependency [docx] or [all] when installing MarkItDown. For example:\n\n* pip install markitdown[docx]\n* pip install markitdown[all]\n* pip install markitdown[docx, ...]\n* etc.\n\nTraceback (most recent call last):\n  File \"C:\\Users\\user\\Documents\\doc_parcer\\benchmarks\\adapters\\base.py\", line 52, in run\n    out = self.parse(path)\n          ^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\user\\Documents\\doc_parcer\\benchmarks\\adapters\\markitdown_adapter.py\", line 39, in parse\n    result = md.convert(str(path))\n             ^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\user\\AppData\\Roaming\\Python\\Python311\\site-packages\\markitdown\\_markitdown.py\", line 283, in convert\n    return self.convert_local(source, stream_info=stream_info, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nmarkitdown._exceptions.FileConversionException: File conversion failed after 1 attempts:\n - DocxConverter threw MissingDependencyException with message: DocxConverter recognized the input as a potential .docx file, but the dependencies needed to read .docx files have not been installed. To resolve this error, include the optional dependency [docx] or [all] when installing MarkItDown. For example:\n\n* pip install markitdown[docx]\n* pip install markitdown[all]\n* pip install markitdown[docx, ...]\n* etc.\n\n",
+      "metrics": null
+    },
+    {
+      "adapter": "legacy_file_parser",
+      "fixture": "16.08.17 3억초과 개인사업자 대형가맹점 리스트 관련 유권해석.docx",
+      "extension": ".docx",
+      "ok": true,
+      "duration_ms": 434.23120002262294,
+      "peak_mem_mb": 3.2142562866210938,
+      "text_length": 1300,
+      "table_count": 0,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 1.0,
+        "matched_keywords": 4,
+        "expected_keywords": 4,
+        "table_accuracy": 1.0,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 1.0,
+        "composite": 1.0
+      }
+    },
+    {
+      "adapter": "markitdown",
+      "fixture": "16.09.27 청탁금지법상 '공무수행사인' 범위에 대한 질의.docx",
+      "extension": ".docx",
+      "ok": false,
+      "duration_ms": 114.54809998394921,
+      "peak_mem_mb": 0.2912454605102539,
+      "text_length": 0,
+      "table_count": 0,
+      "image_count": 0,
+      "error": "FileConversionException: File conversion failed after 1 attempts:\n - DocxConverter threw MissingDependencyException with message: DocxConverter recognized the input as a potential .docx file, but the dependencies needed to read .docx files have not been installed. To resolve this error, include the optional dependency [docx] or [all] when installing MarkItDown. For example:\n\n* pip install markitdown[docx]\n* pip install markitdown[all]\n* pip install markitdown[docx, ...]\n* etc.\n\nTraceback (most recent call last):\n  File \"C:\\Users\\user\\Documents\\doc_parcer\\benchmarks\\adapters\\base.py\", line 52, in run\n    out = self.parse(path)\n          ^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\user\\Documents\\doc_parcer\\benchmarks\\adapters\\markitdown_adapter.py\", line 39, in parse\n    result = md.convert(str(path))\n             ^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\user\\AppData\\Roaming\\Python\\Python311\\site-packages\\markitdown\\_markitdown.py\", line 283, in convert\n    return self.convert_local(source, stream_info=stream_info, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nmarkitdown._exceptions.FileConversionException: File conversion failed after 1 attempts:\n - DocxConverter threw MissingDependencyException with message: DocxConverter recognized the input as a potential .docx file, but the dependencies needed to read .docx files have not been installed. To resolve this error, include the optional dependency [docx] or [all] when installing MarkItDown. For example:\n\n* pip install markitdown[docx]\n* pip install markitdown[all]\n* pip install markitdown[docx, ...]\n* etc.\n\n",
+      "metrics": null
+    },
+    {
+      "adapter": "legacy_file_parser",
+      "fixture": "16.09.27 청탁금지법상 '공무수행사인' 범위에 대한 질의.docx",
+      "extension": ".docx",
+      "ok": true,
+      "duration_ms": 13.770099962130189,
+      "peak_mem_mb": 0.26767539978027344,
+      "text_length": 3777,
+      "table_count": 0,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 0.75,
+        "matched_keywords": 3,
+        "expected_keywords": 4,
+        "table_accuracy": 1.0,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 1.0,
+        "composite": 0.9375
+      }
+    },
+    {
+      "adapter": "legacy_file_parser",
+      "fixture": "3. 정성적 제안서_창업역량강화교육프로그램운영용역_(주)렛츠_231030-02.hwp",
+      "extension": ".hwp",
+      "ok": true,
+      "duration_ms": 55578.44200002728,
+      "peak_mem_mb": 25.223814010620117,
+      "text_length": 66144,
+      "table_count": 61,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 1.0,
+        "matched_keywords": 4,
+        "expected_keywords": 4,
+        "table_accuracy": 0.9634146341463414,
+        "image_accuracy": 0.6875,
+        "text_length_in_range": 0.0,
+        "composite": 0.6627286585365854
+      }
+    },
+    {
+      "adapter": "markitdown",
+      "fixture": "●제안서(최종)_한국관광공사_성장 관광벤처기업 교육 컨설팅_(주)렛츠_20210509-2.pptx",
+      "extension": ".pptx",
+      "ok": true,
+      "duration_ms": 1296.7900999938138,
+      "peak_mem_mb": 6.015894889831543,
+      "text_length": 23147,
+      "table_count": 13,
+      "image_count": 38,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 1.0,
+        "matched_keywords": 4,
+        "expected_keywords": 4,
+        "table_accuracy": 1.0,
+        "image_accuracy": 0.9,
+        "text_length_in_range": 0.0,
+        "composite": 0.725
+      }
+    },
+    {
+      "adapter": "legacy_file_parser",
+      "fixture": "●제안서(최종)_한국관광공사_성장 관광벤처기업 교육 컨설팅_(주)렛츠_20210509-2.pptx",
+      "extension": ".pptx",
+      "ok": true,
+      "duration_ms": 63.06029995903373,
+      "peak_mem_mb": 2.606595993041992,
+      "text_length": 170,
+      "table_count": 0,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 0.0,
+        "matched_keywords": 0,
+        "expected_keywords": 4,
+        "table_accuracy": 0.6153846153846154,
+        "image_accuracy": 0.6599999999999999,
+        "text_length_in_range": 0.0,
+        "composite": 0.31884615384615383
+      }
+    },
+    {
+      "adapter": "markitdown",
+      "fixture": "스테이블코인 법제화 과제와 금융권의 대응방안_20250424.pdf",
+      "extension": ".pdf",
+      "ok": true,
+      "duration_ms": 675.5436999956146,
+      "peak_mem_mb": 43.22244930267334,
+      "text_length": 0,
+      "table_count": 0,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 0.0,
+        "matched_keywords": 0,
+        "expected_keywords": 3,
+        "table_accuracy": 1.0,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 1.0,
+        "composite": 0.75
+      }
+    },
+    {
+      "adapter": "legacy_file_parser",
+      "fixture": "스테이블코인 법제화 과제와 금융권의 대응방안_20250424.pdf",
+      "extension": ".pdf",
+      "ok": true,
+      "duration_ms": 306.32440000772476,
+      "peak_mem_mb": 28.849711418151855,
+      "text_length": 99,
+      "table_count": 0,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 0.0,
+        "matched_keywords": 0,
+        "expected_keywords": 3,
+        "table_accuracy": 1.0,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 1.0,
+        "composite": 0.75
+      }
+    },
+    {
+      "adapter": "markitdown",
+      "fixture": "키움증권_스테이블코인.pdf",
+      "extension": ".pdf",
+      "ok": true,
+      "duration_ms": 229969.603799982,
+      "peak_mem_mb": 201.86242198944092,
+      "text_length": 71524,
+      "table_count": 0,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 1.0,
+        "matched_keywords": 5,
+        "expected_keywords": 5,
+        "table_accuracy": 0.6136363636363636,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 1.0,
+        "composite": 0.9034090909090909
+      }
+    },
+    {
+      "adapter": "legacy_file_parser",
+      "fixture": "키움증권_스테이블코인.pdf",
+      "extension": ".pdf",
+      "ok": true,
+      "duration_ms": 121424.624199979,
+      "peak_mem_mb": 230.36386394500732,
+      "text_length": 101095,
+      "table_count": 32,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 1.0,
+        "matched_keywords": 5,
+        "expected_keywords": 5,
+        "table_accuracy": 0.7954545454545454,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 0.0,
+        "composite": 0.6988636363636364
+      }
+    }
+  ],
+  "summary": {
+    "markitdown": {
+      "runs": 5,
+      "ok": 3,
+      "errors": 2,
+      "mean_duration_ms": 77313.97919999047,
+      "median_duration_ms": 1296.7900999938138,
+      "mean_peak_mem_mb": 83.70025539398193,
+      "mean_composite": 0.7928030303030303
+    },
+    "legacy_file_parser": {
+      "runs": 6,
+      "ok": 6,
+      "errors": 0,
+      "mean_duration_ms": 29636.7420333263,
+      "median_duration_ms": 370.27780001517385,
+      "mean_peak_mem_mb": 48.42098617553711,
+      "mean_composite": 0.7279897414577293
+    }
+  }
+}
