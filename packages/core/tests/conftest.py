@@ -1,0 +1,41 @@
+"""Shared pytest fixtures for the core package.
+
+Session-scoped synthetic fixtures live here so each test run pays the build
+cost once. Per-format generators are defined in :mod:`_synth`.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+
+from tests import _synth
+
+__all__ = [
+    "docx_simple",
+    "docx_with_table",
+    "fixtures_dir",
+    "hwpx_simple",
+]
+
+
+@pytest.fixture(scope="session")
+def fixtures_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """A session-scoped temp directory holding synthetic fixtures."""
+    return tmp_path_factory.mktemp("synth_fixtures")
+
+
+@pytest.fixture(scope="session")
+def docx_simple(fixtures_dir: Path) -> Path:
+    return _synth.build_docx_simple(fixtures_dir)
+
+
+@pytest.fixture(scope="session")
+def docx_with_table(fixtures_dir: Path) -> Path:
+    return _synth.build_docx_with_table(fixtures_dir)
+
+
+@pytest.fixture(scope="session")
+def hwpx_simple(fixtures_dir: Path) -> Path:
+    return _synth.build_hwpx_simple(fixtures_dir)
