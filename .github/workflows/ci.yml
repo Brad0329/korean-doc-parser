@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────────
+  # Fast lane: lint + type-check + unit tests (no LibreOffice)
+  # Runs on Ubuntu + Windows × Python 3.11 (CLAUDE.md §"CI" 사내 매트릭스)
+  # ──────────────────────────────────────────────────────────────────────
+  lint-and-test:
+    name: ${{ matrix.os }} / py${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.11"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+          python-version: ${{ matrix.python }}
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            uv.lock
+
+      - name: Sync dependencies (frozen)
+        run: uv sync --frozen
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+      - name: mypy (strict)
+        run: uv run mypy
+
+      - name: pytest (fast — exclude slow + hwp markers)
+        run: uv run pytest -m "not slow and not hwp" --cov --cov-report=xml --cov-report=term
+
+      - name: Upload coverage artifact
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ github.sha }}
+          path: coverage.xml
+          retention-days: 14
+
+  # ──────────────────────────────────────────────────────────────────────
+  # Slow lane: integration tests requiring LibreOffice
+  # (PPTX/PPT/DOC conversion path — Phase 1 task #12)
+  # Ubuntu only — LibreOffice install on Windows is ~10 min, too costly.
+  # ──────────────────────────────────────────────────────────────────────
+  integration:
+    name: integration (LibreOffice on Ubuntu)
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install LibreOffice
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libreoffice
+          libreoffice --version
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+          python-version: "3.11"
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            uv.lock
+
+      - name: Sync dependencies (frozen)
+        run: uv sync --frozen
+
+      - name: pytest (slow lane only — markers)
+        run: uv run pytest -m "slow" --cov --cov-report=term
