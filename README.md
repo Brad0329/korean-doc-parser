@@ -1,8 +1,9 @@
 # korean-doc-parser
 
-> HWP/HWPX 를 포함한 한국어 문서를 마크다운 + 이미지 + 메타데이터로 변환하는 **사내 private 라이브러리**.
+> HWPX 를 포함한 한국어 문서를 마크다운 + 이미지 + 메타데이터로 변환하는 **사내 private 라이브러리**.
 
-**상태:** Phase 1 빌드 중 (v0.1.0 출시 예정). 아직 정식 릴리즈 없음.
+**상태:** **v0.1.0 출시** (2026-05-21). PDF / DOCX / HWPX 3포맷 지원.
+HWP / PPTX / PPT / DOC 는 v0.2 로 이월 — `worklog/002_v0.1.0_release.md` 참고.
 
 ---
 
@@ -10,8 +11,9 @@
 
 markitdown / marker / docling 같은 글로벌 마크다운 변환기는 한국 문서의 핵심 포맷인 **HWP/HWPX** 를 지원하지 않습니다. `korean-doc-parser` 는 그 빈 영역을 채우는 사내 라이브러리로,
 
-- **7포맷 지원:** HWP / HWPX / PDF / DOCX / DOC / PPTX / PPT
-- **2계층 아키텍처:** 순수 추출 엔진(`core`/`hwp`) + AI 라벨링/검수 파이프라인(`pipeline`)
+- **현재 v0.1.0:** PDF / DOCX / **HWPX** (3포맷)
+- **v0.2 예정:** HWP / PPTX / PPT / DOC (4포맷 추가 → 합계 7포맷)
+- **2계층 아키텍처:** 순수 추출 엔진(`core`/`hwp`) + AI 라벨링/검수 파이프라인(`pipeline`, v0.3+)
 - **단일 파일 포터빌리티:** 코어는 외부 import 0건 — 다른 프로젝트에 단일 패키지로 도입 가능
 - **5종 한국 도메인 타깃:** 입찰공고 / 법률검토 / 공문 / 전람회 PDF / 제안서
 
@@ -19,11 +21,11 @@ markitdown / marker / docling 같은 글로벌 마크다운 변환기는 한국 
 
 ## 패키지 구조
 
-| 패키지 | 라이선스 | 설명 |
-|---|---|---|
-| `korean-doc-parser` | MIT | 메인 엔진 (PDF/DOCX/HWPX/PPTX/PPT/DOC) |
-| `korean-doc-parser-hwp` | GPL-3.0-or-later | HWP 파서 (pyhwp 의존, 격리) |
-| `korean-doc-parser-pipeline` | MIT | AI 라벨링 + 검수 큐 (Claude Vision) |
+| 패키지 | 라이선스 | 상태 | 설명 |
+|---|---|---|---|
+| `korean-doc-parser` | MIT | **v0.1.0** | 메인 엔진 (PDF / DOCX / HWPX 출시, PPTX/PPT/DOC v0.2) |
+| `korean-doc-parser-hwp` | GPL-3.0-or-later | skeleton | HWP 파서 (pyhwp 의존, 격리) — v0.2 본격 |
+| `korean-doc-parser-pipeline` | MIT | skeleton | AI 라벨링 + 검수 큐 (Claude Vision) — Phase 3 |
 
 ```
 korean-doc-parser/
@@ -71,35 +73,34 @@ pip install "git+https://github.com/Brad0329/korean-doc-parser.git#subdirectory=
 
 ---
 
-## 사용 예시
-
-> ⚠️ Phase 1 빌드 중 — 아래 API 는 v0.1.0 출시 시점의 예상 형태입니다.
+## 사용 예시 (v0.1.0)
 
 ```python
 from korean_doc_parser import extract
 
-result = extract("계약서.hwp")
+# PDF / DOCX / HWPX 모두 동일한 ParseResult 반환
+result = extract("법률검토.docx")
 
 print(result.markdown)          # 마크다운 본문
-print(result.metadata.format)   # "hwp"
+print(result.metadata.format)   # "docx"
+print(result.metadata.title)    # core_properties.title
 print(len(result.tables))       # 표 개수
 
+for tbl in result.tables:
+    print(tbl.rows)             # list[list[str]] — 사용자가 원하는 형식으로 직렬화
+
 for img in result.images:
-    print(img.page_no, img.detected_caption, img.sha256)
+    print(img.sha256, img.width, img.height, img.file_path)
 ```
 
-검수 파이프라인까지:
+지원 확장자 확인:
 
 ```python
-from korean_doc_parser_pipeline import DocumentIngestionPipeline
-
-pipeline = DocumentIngestionPipeline(api_key=...)
-result = pipeline.ingest("제안서.pdf")
-
-for img in result.images:
-    print(img.ai_caption, img.ai_confidence, img.status)
-    # status = auto_approved | needs_review
+from korean_doc_parser import supported_extensions
+print(supported_extensions())   # ('.docx', '.hwpx', '.pdf')
 ```
+
+검수 파이프라인 (`korean-doc-parser-pipeline`) 은 Phase 3 마일스톤에서 본격 구현됩니다.
 
 ---
 

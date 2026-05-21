@@ -443,7 +443,7 @@ wheels = [
 
 [[package]]
 name = "korean-doc-parser"
-version = "0.1.0.dev0"
+version = "0.1.0"
 source = { editable = "packages/core" }
 dependencies = [
     { name = "pdfplumber" },
@@ -460,7 +460,7 @@ requires-dist = [
 
 [[package]]
 name = "korean-doc-parser-hwp"
-version = "0.1.0.dev0"
+version = "0.1.0"
 source = { editable = "packages/hwp" }
 dependencies = [
     { name = "korean-doc-parser" },
@@ -471,7 +471,7 @@ requires-dist = [{ name = "korean-doc-parser", editable = "packages/core" }]
 
 [[package]]
 name = "korean-doc-parser-pipeline"
-version = "0.1.0.dev0"
+version = "0.1.0"
 source = { editable = "packages/pipeline" }
 dependencies = [
     { name = "korean-doc-parser" },
