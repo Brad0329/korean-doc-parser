@@ -29,6 +29,11 @@ from korean_doc_parser.exceptions import (
     UnsupportedFormatError,
 )
 
+# Side-effect imports: each built-in parser registers itself with the global
+# registry on import. Extras packages (e.g. korean-doc-parser-hwp) do the same
+# on their own import.
+from korean_doc_parser.parsers import pdf as _pdf
+
 __version__ = "0.1.0.dev0"
 
 __all__ = [

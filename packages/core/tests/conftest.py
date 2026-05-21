@@ -17,6 +17,10 @@ __all__ = [
     "docx_with_table",
     "fixtures_dir",
     "hwpx_simple",
+    "pdf_multipage",
+    "pdf_simple",
+    "pdf_with_image",
+    "pdf_with_table",
 ]
 
 
@@ -39,3 +43,23 @@ def docx_with_table(fixtures_dir: Path) -> Path:
 @pytest.fixture(scope="session")
 def hwpx_simple(fixtures_dir: Path) -> Path:
     return _synth.build_hwpx_simple(fixtures_dir)
+
+
+@pytest.fixture(scope="session")
+def pdf_simple(fixtures_dir: Path) -> Path:
+    return _synth.build_pdf_simple(fixtures_dir)
+
+
+@pytest.fixture(scope="session")
+def pdf_multipage(fixtures_dir: Path) -> Path:
+    return _synth.build_pdf_multipage(fixtures_dir)
+
+
+@pytest.fixture(scope="session")
+def pdf_with_table(fixtures_dir: Path) -> Path:
+    return _synth.build_pdf_with_table(fixtures_dir)
+
+
+@pytest.fixture(scope="session")
+def pdf_with_image(fixtures_dir: Path) -> Path:
+    return _synth.build_pdf_with_image(fixtures_dir)

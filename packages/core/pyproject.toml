@@ -19,8 +19,7 @@ classifiers = [
   "Natural Language :: Korean",
 ]
 dependencies = [
-  # Per-format dependencies are added when each parser is implemented
-  # (Phase 1 tasks #8/#9/#10/#12). Kept empty during bootstrap.
+  "pdfplumber>=0.11",  # PDF parser (Phase 0 decision: self-implement)
 ]
 
 [project.urls]

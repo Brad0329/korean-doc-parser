@@ -21,6 +21,10 @@ __all__ = [
     "build_docx_simple",
     "build_docx_with_table",
     "build_hwpx_simple",
+    "build_pdf_multipage",
+    "build_pdf_simple",
+    "build_pdf_with_image",
+    "build_pdf_with_table",
 ]
 
 
@@ -96,6 +100,146 @@ def build_docx_with_table(dest_dir: Path) -> Path:
             "expected_sections": ["표 포함 문서"],
             "expected_keywords": ["항목", "매출", "비용"],
             "expected_text_length_range": [30, 500],
+        },
+    )
+    return path
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PDF — reportlab. English text only (default fonts lack Korean glyphs);
+# Korean PDF coverage comes from real `samples/*.pdf` fixtures, not synth.
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def build_pdf_simple(dest_dir: Path) -> Path:
+    """Synthetic single-page PDF with English text."""
+    from reportlab.lib.pagesizes import A4
+    from reportlab.pdfgen import canvas
+
+    path = dest_dir / "pdf_simple.pdf"
+    c = canvas.Canvas(str(path), pagesize=A4)
+    c.setTitle("Synthetic PDF Title")
+    c.setAuthor("doc_parser tests")
+    c.drawString(72, 800, "Synthetic PDF Fixture")
+    c.drawString(72, 770, "This is a minimal one-page PDF for parser tests.")
+    c.showPage()
+    c.save()
+
+    _write_gt(
+        path,
+        {
+            "expected_format": "pdf",
+            "expected_page_count": 1,
+            "expected_table_count": 0,
+            "expected_image_count": 0,
+            "expected_sections": ["Synthetic PDF Fixture"],
+            "expected_keywords": ["minimal one-page PDF"],
+            "expected_text_length_range": [30, 500],
+            "expected_title": "Synthetic PDF Title",
+        },
+    )
+    return path
+
+
+def build_pdf_multipage(dest_dir: Path) -> Path:
+    """Synthetic 3-page PDF — exercises page_count + multi-page text join."""
+    from reportlab.lib.pagesizes import A4
+    from reportlab.pdfgen import canvas
+
+    path = dest_dir / "pdf_multipage.pdf"
+    c = canvas.Canvas(str(path), pagesize=A4)
+    for i in range(3):
+        c.drawString(72, 800, f"Page {i + 1} of 3")
+        c.drawString(72, 770, f"Content on page {i + 1}.")
+        c.showPage()
+    c.save()
+
+    _write_gt(
+        path,
+        {
+            "expected_format": "pdf",
+            "expected_page_count": 3,
+            "expected_table_count": 0,
+            "expected_image_count": 0,
+            "expected_sections": ["Page 1 of 3", "Page 2 of 3", "Page 3 of 3"],
+            "expected_text_length_range": [40, 500],
+        },
+    )
+    return path
+
+
+def build_pdf_with_table(dest_dir: Path) -> Path:
+    """Synthetic single-page PDF with one 3-by-3 table."""
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table
+
+    path = dest_dir / "pdf_with_table.pdf"
+    doc = SimpleDocTemplate(str(path), pagesize=A4)
+    styles = getSampleStyleSheet()
+    story = [
+        Paragraph("PDF with Table Fixture", styles["Heading1"]),
+        Spacer(1, 12),
+        Table(
+            [
+                ["Item", "Value", "Note"],
+                ["Revenue", "1000", "Unit: million KRW"],
+                ["Cost", "600", "Includes fixed cost"],
+            ],
+            style=[
+                ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+            ],
+        ),
+    ]
+    doc.build(story)
+
+    _write_gt(
+        path,
+        {
+            "expected_format": "pdf",
+            "expected_page_count": 1,
+            "expected_table_count": 1,
+            "expected_image_count": 0,
+            "expected_sections": ["PDF with Table Fixture"],
+            "expected_keywords": ["Revenue", "Cost"],
+            "expected_text_length_range": [50, 1500],
+        },
+    )
+    return path
+
+
+def build_pdf_with_image(dest_dir: Path) -> Path:
+    """Synthetic single-page PDF embedding a 32-by-32 red square PNG."""
+    from io import BytesIO
+
+    from PIL import Image
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.utils import ImageReader
+    from reportlab.pdfgen import canvas
+
+    path = dest_dir / "pdf_with_image.pdf"
+
+    png_buf = BytesIO()
+    Image.new("RGB", (32, 32), (255, 0, 0)).save(png_buf, format="PNG")
+    png_buf.seek(0)
+
+    c = canvas.Canvas(str(path), pagesize=A4)
+    c.drawString(72, 800, "PDF with Image Fixture")
+    c.drawImage(ImageReader(png_buf), 100, 700, width=32, height=32)
+    c.showPage()
+    c.save()
+
+    _write_gt(
+        path,
+        {
+            "expected_format": "pdf",
+            "expected_page_count": 1,
+            "expected_table_count": 0,
+            "expected_image_count": 1,
+            "expected_sections": ["PDF with Image Fixture"],
+            "expected_text_length_range": [10, 500],
         },
     )
     return path
