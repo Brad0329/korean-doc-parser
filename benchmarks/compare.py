@@ -21,12 +21,10 @@ import gc
 import json
 import statistics
 import sys
-import time
 import tracemalloc
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Iterable, Optional
 
 # ruff: noqa: E402 — relative imports below depend on sys.path setup above
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -34,7 +32,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from adapters import ALL_ADAPTERS, BaseAdapter, ParseOutput  # type: ignore[import-not-found]
-from metrics import FixtureMetrics, load_ground_truth, score  # type: ignore[import-not-found]
+from metrics import load_ground_truth, score  # type: ignore[import-not-found]
 
 # Only these extensions are treated as fixtures — keeps README.md and other
 # bookkeeping files out of the run set.
@@ -52,8 +50,8 @@ class Run:
     text_length: int
     table_count: int
     image_count: int
-    error: Optional[str] = None
-    metrics: Optional[dict] = None
+    error: str | None = None
+    metrics: dict | None = None
 
 
 @dataclass
@@ -128,7 +126,7 @@ def summarize(runs: list[Run]) -> dict:
         else:
             b["errors"] += 1
 
-    for name, b in by_adapter.items():
+    for _name, b in by_adapter.items():
         b["mean_duration_ms"] = _mean(b["durations_ms"])
         b["median_duration_ms"] = _median(b["durations_ms"])
         b["mean_peak_mem_mb"] = _mean(b["peak_mem_mb"])
@@ -140,17 +138,17 @@ def summarize(runs: list[Run]) -> dict:
     return by_adapter
 
 
-def _mean(xs: list[float]) -> Optional[float]:
+def _mean(xs: list[float]) -> float | None:
     return statistics.fmean(xs) if xs else None
 
 
-def _median(xs: list[float]) -> Optional[float]:
+def _median(xs: list[float]) -> float | None:
     return statistics.median(xs) if xs else None
 
 
 def write_markdown_report(report: Report, path: Path) -> None:
     lines: list[str] = []
-    lines.append(f"# Phase 0 Benchmark Report\n")
+    lines.append("# Phase 0 Benchmark Report\n")
     lines.append(f"- started_at: `{report.started_at}`")
     lines.append(f"- finished_at: `{report.finished_at}`")
     lines.append(f"- fixtures_root: `{report.fixtures_root}`")
@@ -164,7 +162,9 @@ def write_markdown_report(report: Report, path: Path) -> None:
     lines.append("")
 
     lines.append("## Summary (per adapter)\n")
-    lines.append("| adapter | runs | ok | errors | mean_ms | median_ms | mean_mem_mb | mean_composite |")
+    lines.append(
+        "| adapter | runs | ok | errors | mean_ms | median_ms | mean_mem_mb | mean_composite |"
+    )
     lines.append("|---|---:|---:|---:|---:|---:|---:|---:|")
     for name, b in report.summary.items():
         lines.append(
@@ -207,13 +207,13 @@ def write_markdown_report(report: Report, path: Path) -> None:
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def _fmt(v: Optional[float], digits: int) -> str:
+def _fmt(v: float | None, digits: int) -> str:
     if v is None:
         return "n/a"
     return f"{v:.{digits}f}"
 
 
-def main(argv: Optional[list[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Phase 0 parser benchmark runner")
     parser.add_argument("--fixtures", default=str(SCRIPT_DIR / "fixtures"))
     parser.add_argument("--results", default=str(SCRIPT_DIR / "results"))
@@ -249,7 +249,7 @@ def main(argv: Optional[list[str]] = None) -> int:
             file=sys.stderr,
         )
 
-    started = datetime.now(timezone.utc).isoformat()
+    started = datetime.now(UTC).isoformat()
     runs: list[Run] = []
 
     availability = {a.name: a.is_available() for a in adapters}
@@ -267,7 +267,7 @@ def main(argv: Optional[list[str]] = None) -> int:
                 continue
             print(f"[run] {adapter.name} :: {fixture.name}")
             out, peak_mb = run_one(adapter, fixture)
-            metrics_dict: Optional[dict] = None
+            metrics_dict: dict | None = None
             if gt is not None and out.error is None:
                 metrics_dict = score(out.text, out.table_count, out.image_count, gt).to_dict()
             runs.append(
@@ -286,7 +286,7 @@ def main(argv: Optional[list[str]] = None) -> int:
                 )
             )
 
-    finished = datetime.now(timezone.utc).isoformat()
+    finished = datetime.now(UTC).isoformat()
     report = Report(
         started_at=started,
         finished_at=finished,
@@ -297,7 +297,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         summary=summarize(runs),
     )
 
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     json_path = results_root / f"phase0_{stamp}.json"
     md_path = results_root / f"phase0_{stamp}.md"
     json_path.write_text(json.dumps(asdict(report), ensure_ascii=False, indent=2), encoding="utf-8")

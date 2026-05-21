@@ -51,7 +51,7 @@ class MarkerAdapter(BaseAdapter):
             return ParseOutput(error=f"marker does not support {path.suffix}")
 
         if self._mode == "modern":
-            PdfConverter, create_model_dict = self._modern  # type: ignore[misc]
+            PdfConverter, create_model_dict = self._modern  # type: ignore[misc]  # noqa: N806
             converter = PdfConverter(artifact_dict=create_model_dict())
             rendered = converter(str(path))
             text = getattr(rendered, "markdown", None) or str(rendered)

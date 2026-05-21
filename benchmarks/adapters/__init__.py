@@ -24,10 +24,10 @@ ALL_ADAPTERS: list[type[BaseAdapter]] = [
 __all__ = [
     "ALL_ADAPTERS",
     "BaseAdapter",
-    "ParseOutput",
-    "MarkitdownAdapter",
-    "MarkerAdapter",
     "DoclingAdapter",
-    "UnstructuredAdapter",
     "LegacyFileParserAdapter",
+    "MarkerAdapter",
+    "MarkitdownAdapter",
+    "ParseOutput",
+    "UnstructuredAdapter",
 ]

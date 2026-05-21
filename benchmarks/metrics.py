@@ -17,26 +17,25 @@ report can show "n/a" rather than a misleading zero.
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Optional
 
 
 @dataclass
 class FixtureMetrics:
-    keyword_recall: Optional[float] = None
-    matched_keywords: Optional[int] = None
-    expected_keywords: Optional[int] = None
-    table_accuracy: Optional[float] = None
-    image_accuracy: Optional[float] = None
-    text_length_in_range: Optional[float] = None
-    composite: Optional[float] = None
+    keyword_recall: float | None = None
+    matched_keywords: int | None = None
+    expected_keywords: int | None = None
+    table_accuracy: float | None = None
+    image_accuracy: float | None = None
+    text_length_in_range: float | None = None
+    composite: float | None = None
 
     def to_dict(self) -> dict:
         return asdict(self)
 
 
-def load_ground_truth(fixture_path: Path) -> Optional[dict]:
+def load_ground_truth(fixture_path: Path) -> dict | None:
     gt_path = fixture_path.with_suffix(fixture_path.suffix + ".gt.json")
     if gt_path.is_file():
         return json.loads(gt_path.read_text(encoding="utf-8"))

@@ -12,7 +12,6 @@ import time
 import traceback
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
 
 
 @dataclass
@@ -24,8 +23,8 @@ class ParseOutput:
     image_count: int = 0
     duration_ms: float = 0.0
     peak_mem_mb: float = 0.0
-    error: Optional[str] = None
-    raw_markdown: Optional[str] = None
+    error: str | None = None
+    raw_markdown: str | None = None
     extra: dict = field(default_factory=dict)
 
 
