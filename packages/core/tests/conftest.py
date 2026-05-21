@@ -14,6 +14,7 @@ from tests import _synth
 
 __all__ = [
     "docx_simple",
+    "docx_with_image",
     "docx_with_table",
     "fixtures_dir",
     "hwpx_simple",
@@ -38,6 +39,11 @@ def docx_simple(fixtures_dir: Path) -> Path:
 @pytest.fixture(scope="session")
 def docx_with_table(fixtures_dir: Path) -> Path:
     return _synth.build_docx_with_table(fixtures_dir)
+
+
+@pytest.fixture(scope="session")
+def docx_with_image(fixtures_dir: Path) -> Path:
+    return _synth.build_docx_with_image(fixtures_dir)
 
 
 @pytest.fixture(scope="session")

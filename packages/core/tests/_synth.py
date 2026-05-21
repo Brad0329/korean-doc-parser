@@ -19,6 +19,7 @@ from typing import Any
 
 __all__ = [
     "build_docx_simple",
+    "build_docx_with_image",
     "build_docx_with_table",
     "build_hwpx_simple",
     "build_pdf_multipage",
@@ -98,8 +99,42 @@ def build_docx_with_table(dest_dir: Path) -> Path:
             "expected_table_count": 1,
             "expected_image_count": 0,
             "expected_sections": ["표 포함 문서"],
-            "expected_keywords": ["항목", "매출", "비용"],
-            "expected_text_length_range": [30, 500],
+            # Note: table cells live in result.tables (not in markdown),
+            # so the keyword check targets paragraph body only.
+            "expected_keywords": ["예시 데이터"],
+            "expected_text_length_range": [20, 500],
+        },
+    )
+    return path
+
+
+def build_docx_with_image(dest_dir: Path) -> Path:
+    """Synthetic DOCX containing one inline image (32-by-32 PNG)."""
+    from io import BytesIO
+
+    from docx import Document
+    from PIL import Image
+
+    path = dest_dir / "docx_with_image.docx"
+    doc = Document()
+    doc.add_heading("이미지 포함 문서", level=1)
+    doc.add_paragraph("아래 그림은 임베디드 이미지입니다.")
+
+    png_buf = BytesIO()
+    Image.new("RGB", (32, 32), (0, 128, 0)).save(png_buf, format="PNG")
+    png_buf.seek(0)
+    doc.add_picture(png_buf, width=None)
+    doc.save(str(path))
+
+    _write_gt(
+        path,
+        {
+            "expected_format": "docx",
+            "expected_table_count": 0,
+            "expected_image_count": 1,
+            "expected_sections": ["이미지 포함 문서"],
+            "expected_keywords": ["임베디드 이미지"],
+            "expected_text_length_range": [10, 500],
         },
     )
     return path
