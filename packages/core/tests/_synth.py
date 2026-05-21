@@ -22,6 +22,7 @@ __all__ = [
     "build_docx_with_image",
     "build_docx_with_table",
     "build_hwpx_simple",
+    "build_hwpx_with_table",
     "build_pdf_multipage",
     "build_pdf_simple",
     "build_pdf_with_image",
@@ -306,6 +307,27 @@ _HWPX_SECTION0_XML = """<?xml version="1.0" encoding="UTF-8"?>
 """
 
 
+_HWPX_SECTION0_TABLE_XML = """<?xml version="1.0" encoding="UTF-8"?>
+<hp:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph">
+  <hp:p>
+    <hp:run><hp:t>표 포함 HWPX</hp:t></hp:run>
+  </hp:p>
+  <hp:p>
+    <hp:tbl>
+      <hp:tr>
+        <hp:tc><hp:run><hp:t>A</hp:t></hp:run></hp:tc>
+        <hp:tc><hp:run><hp:t>B</hp:t></hp:run></hp:tc>
+      </hp:tr>
+      <hp:tr>
+        <hp:tc><hp:run><hp:t>1</hp:t></hp:run></hp:tc>
+        <hp:tc><hp:run><hp:t>2</hp:t></hp:run></hp:tc>
+      </hp:tr>
+    </hp:tbl>
+  </hp:p>
+</hp:sec>
+"""
+
+
 def build_hwpx_simple(dest_dir: Path) -> Path:
     """Build a minimal valid HWPX (ZIP with mimetype + content + section).
 
@@ -332,6 +354,30 @@ def build_hwpx_simple(dest_dir: Path) -> Path:
             "expected_sections": ["HWPX 합성 픽스처"],
             "expected_keywords": ["코드로 생성한 최소 HWPX"],
             "expected_text_length_range": [20, 500],
+            "expected_title": "HWPX 합성 픽스처",
+        },
+    )
+    return path
+
+
+def build_hwpx_with_table(dest_dir: Path) -> Path:
+    """Build a minimal HWPX containing one 2-by-2 table inside section0."""
+    import zipfile
+
+    path = dest_dir / "hwpx_with_table.hwpx"
+    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("mimetype", _HWPX_MIMETYPE)
+        zf.writestr("Contents/content.hpf", _HWPX_CONTENT_HPF)
+        zf.writestr("Contents/section0.xml", _HWPX_SECTION0_TABLE_XML)
+
+    _write_gt(
+        path,
+        {
+            "expected_format": "hwpx",
+            "expected_table_count": 1,
+            "expected_image_count": 0,
+            "expected_sections": ["표 포함 HWPX"],
+            "expected_text_length_range": [5, 200],
         },
     )
     return path
