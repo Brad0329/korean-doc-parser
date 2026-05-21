@@ -1,0 +1,24 @@
+# Workspace root for korean-doc-parser monorepo.
+#
+# This file is NOT a publishable package. uv treats this directory as a
+# virtual workspace root and the three `packages/*` are the actual
+# publishable units.
+#
+# Usage:
+#   uv sync                  # install all workspace members + dev tools
+#   uv run pytest            # run tests across the workspace
+#
+# Ruff / mypy / pytest configuration is added in task #2.
+
+[tool.uv.workspace]
+members = ["packages/core", "packages/hwp", "packages/pipeline"]
+
+[tool.uv.sources]
+korean-doc-parser = { workspace = true }
+korean-doc-parser-hwp = { workspace = true }
+korean-doc-parser-pipeline = { workspace = true }
+
+[dependency-groups]
+dev = [
+  # Lint / type / test tooling is added in task #2
+]

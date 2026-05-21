@@ -1,0 +1,37 @@
+version = 1
+revision = 3
+requires-python = ">=3.11"
+
+[manifest]
+members = [
+    "korean-doc-parser",
+    "korean-doc-parser-hwp",
+    "korean-doc-parser-pipeline",
+]
+
+[[package]]
+name = "korean-doc-parser"
+version = "0.1.0.dev0"
+source = { editable = "packages/core" }
+
+[[package]]
+name = "korean-doc-parser-hwp"
+version = "0.1.0.dev0"
+source = { editable = "packages/hwp" }
+dependencies = [
+    { name = "korean-doc-parser" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "korean-doc-parser", editable = "packages/core" }]
+
+[[package]]
+name = "korean-doc-parser-pipeline"
+version = "0.1.0.dev0"
+source = { editable = "packages/pipeline" }
+dependencies = [
+    { name = "korean-doc-parser" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "korean-doc-parser", editable = "packages/core" }]
