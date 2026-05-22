@@ -162,6 +162,7 @@ exclude_lines = [
   "if TYPE_CHECKING:",
   "if __name__ == .__main__.:",
 ]
-# fail_under 는 v0.1 합격 기준 검증 단계(task #13)에서 활성화
-# show_missing 만 활성화해서 진행 중에는 가시성만 확보
+# v0.1.1 부터 활성화 (CLAUDE.md §"라이브러리 특화 규칙 §3":
+# "pytest 커버리지 85% 미만이면 머지 금지"). 현재 전체 97%, 모든 모듈 96%+.
+fail_under = 85
 show_missing = true
