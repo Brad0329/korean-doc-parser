@@ -18,6 +18,9 @@ __all__ = [
     "docx_with_table",
     "fixtures_dir",
     "hwpx_simple",
+    "hwpx_with_image",
+    "hwpx_with_image_corrupt",
+    "hwpx_with_image_resources",
     "hwpx_with_table",
     "pdf_multipage",
     "pdf_simple",
@@ -55,6 +58,21 @@ def hwpx_simple(fixtures_dir: Path) -> Path:
 @pytest.fixture(scope="session")
 def hwpx_with_table(fixtures_dir: Path) -> Path:
     return _synth.build_hwpx_with_table(fixtures_dir)
+
+
+@pytest.fixture(scope="session")
+def hwpx_with_image(fixtures_dir: Path) -> Path:
+    return _synth.build_hwpx_with_image(fixtures_dir)
+
+
+@pytest.fixture(scope="session")
+def hwpx_with_image_resources(fixtures_dir: Path) -> Path:
+    return _synth.build_hwpx_with_image_resources(fixtures_dir)
+
+
+@pytest.fixture(scope="session")
+def hwpx_with_image_corrupt(fixtures_dir: Path) -> Path:
+    return _synth.build_hwpx_with_image_corrupt(fixtures_dir)
 
 
 @pytest.fixture(scope="session")

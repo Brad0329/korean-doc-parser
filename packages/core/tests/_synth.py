@@ -22,6 +22,9 @@ __all__ = [
     "build_docx_with_image",
     "build_docx_with_table",
     "build_hwpx_simple",
+    "build_hwpx_with_image",
+    "build_hwpx_with_image_corrupt",
+    "build_hwpx_with_image_resources",
     "build_hwpx_with_table",
     "build_pdf_multipage",
     "build_pdf_simple",
@@ -377,6 +380,137 @@ def build_hwpx_with_table(dest_dir: Path) -> Path:
             "expected_table_count": 1,
             "expected_image_count": 0,
             "expected_sections": ["표 포함 HWPX"],
+            "expected_text_length_range": [5, 200],
+        },
+    )
+    return path
+
+
+# ── HWPX image fixtures (exercise _extract_images + _inspect_image branches) ──
+
+_HWPX_SECTION0_IMAGE_XML = """<?xml version="1.0" encoding="UTF-8"?>
+<hp:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph">
+  <hp:p>
+    <hp:run><hp:t>이미지 포함 HWPX</hp:t></hp:run>
+  </hp:p>
+  <hp:p>
+    <hp:run><hp:t>아래는 BinData 경로의 임베디드 이미지입니다.</hp:t></hp:run>
+  </hp:p>
+</hp:sec>
+"""
+
+_HWPX_SECTION0_IMAGE_RESOURCES_XML = """<?xml version="1.0" encoding="UTF-8"?>
+<hp:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph">
+  <hp:p>
+    <hp:run><hp:t>Resources 경로 이미지 HWPX</hp:t></hp:run>
+  </hp:p>
+</hp:sec>
+"""
+
+_HWPX_SECTION0_IMAGE_CORRUPT_XML = """<?xml version="1.0" encoding="UTF-8"?>
+<hp:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph">
+  <hp:p>
+    <hp:run><hp:t>손상 이미지 HWPX</hp:t></hp:run>
+  </hp:p>
+</hp:sec>
+"""
+
+
+def build_hwpx_with_image(dest_dir: Path) -> Path:
+    """HWPX with a 32x32 PNG under ``BinData/``.
+
+    Exercises: BinData/ path branch, PIL-success branch of ``_inspect_image``,
+    PNG mime resolution, ``.png`` suffix path of the tempfile writer.
+    """
+    import zipfile
+    from io import BytesIO
+
+    from PIL import Image
+
+    path = dest_dir / "hwpx_with_image.hwpx"
+    png_buf = BytesIO()
+    Image.new("RGB", (32, 32), (0, 0, 255)).save(png_buf, format="PNG")
+
+    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("mimetype", _HWPX_MIMETYPE)
+        zf.writestr("Contents/content.hpf", _HWPX_CONTENT_HPF)
+        zf.writestr("Contents/section0.xml", _HWPX_SECTION0_IMAGE_XML)
+        zf.writestr("BinData/image1.png", png_buf.getvalue())
+
+    _write_gt(
+        path,
+        {
+            "expected_format": "hwpx",
+            "expected_table_count": 0,
+            "expected_image_count": 1,
+            "expected_sections": ["이미지 포함 HWPX"],
+            "expected_keywords": ["BinData 경로"],
+            "expected_text_length_range": [10, 500],
+        },
+    )
+    return path
+
+
+def build_hwpx_with_image_resources(dest_dir: Path) -> Path:
+    """HWPX with a 48x24 JPEG under ``Contents/Resources/``.
+
+    Exercises: Contents/Resources/ path branch, JPEG format detection,
+    ``.jpg`` suffix path. Pairs with ``build_hwpx_with_image`` to cover both
+    media roots that ``_extract_images`` recognizes.
+    """
+    import zipfile
+    from io import BytesIO
+
+    from PIL import Image
+
+    path = dest_dir / "hwpx_with_image_resources.hwpx"
+    jpg_buf = BytesIO()
+    Image.new("RGB", (48, 24), (200, 100, 0)).save(jpg_buf, format="JPEG")
+
+    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("mimetype", _HWPX_MIMETYPE)
+        zf.writestr("Contents/content.hpf", _HWPX_CONTENT_HPF)
+        zf.writestr("Contents/section0.xml", _HWPX_SECTION0_IMAGE_RESOURCES_XML)
+        zf.writestr("Contents/Resources/image1.jpg", jpg_buf.getvalue())
+
+    _write_gt(
+        path,
+        {
+            "expected_format": "hwpx",
+            "expected_table_count": 0,
+            "expected_image_count": 1,
+            "expected_sections": ["Resources 경로 이미지 HWPX"],
+            "expected_text_length_range": [5, 200],
+        },
+    )
+    return path
+
+
+def build_hwpx_with_image_corrupt(dest_dir: Path) -> Path:
+    """HWPX with non-image bytes under ``BinData/broken.bin``.
+
+    Exercises ``_inspect_image``'s exception path: PIL fails to open the bytes,
+    parser must fall back to ``(0, 0, application/octet-stream)`` rather than
+    raise. Real-world payoff: corrupted media inside otherwise-valid HWPX
+    should not crash the whole document parse.
+    """
+    import zipfile
+
+    path = dest_dir / "hwpx_with_image_corrupt.hwpx"
+
+    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("mimetype", _HWPX_MIMETYPE)
+        zf.writestr("Contents/content.hpf", _HWPX_CONTENT_HPF)
+        zf.writestr("Contents/section0.xml", _HWPX_SECTION0_IMAGE_CORRUPT_XML)
+        zf.writestr("BinData/broken.bin", b"not a real image, this is junk bytes")
+
+    _write_gt(
+        path,
+        {
+            "expected_format": "hwpx",
+            "expected_table_count": 0,
+            "expected_image_count": 1,
+            "expected_sections": ["손상 이미지 HWPX"],
             "expected_text_length_range": [5, 200],
         },
     )

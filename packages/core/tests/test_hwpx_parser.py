@@ -84,6 +84,75 @@ def test_hwpx_with_table_matches_ground_truth(hwpx_with_table: Path) -> None:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Image extraction — BinData / Resources / PIL-failure fallback
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_hwpx_with_image_extracts_bitmap(hwpx_with_image: Path) -> None:
+    """BinData/ PNG → tempfile written, sha256/dimensions/mime populated."""
+    result = extract(hwpx_with_image)
+    assert len(result.images) == 1
+    img = result.images[0]
+    assert img.file_path  # non-empty tempfile path
+    assert Path(img.file_path).is_file()
+    assert len(img.sha256) == 64  # sha256 hex digest
+    assert img.size_bytes > 0
+    assert img.width == 32 and img.height == 32
+    assert img.mime_type == "image/png"
+    assert img.file_path.endswith(".png")
+
+
+def test_hwpx_with_image_matches_ground_truth(hwpx_with_image: Path) -> None:
+    result = extract(hwpx_with_image)
+    gt = load_ground_truth(hwpx_with_image)
+    assert gt is not None
+    verify_against_ground_truth(result, gt)
+
+
+def test_hwpx_with_image_resources_extracts_jpeg(hwpx_with_image_resources: Path) -> None:
+    """Contents/Resources/ JPEG → second media-root branch + JPEG format."""
+    result = extract(hwpx_with_image_resources)
+    assert len(result.images) == 1
+    img = result.images[0]
+    assert img.width == 48 and img.height == 24
+    assert img.mime_type == "image/jpeg"
+    assert img.file_path.endswith(".jpg")
+    assert len(img.sha256) == 64
+
+
+def test_hwpx_with_image_resources_matches_ground_truth(
+    hwpx_with_image_resources: Path,
+) -> None:
+    result = extract(hwpx_with_image_resources)
+    gt = load_ground_truth(hwpx_with_image_resources)
+    assert gt is not None
+    verify_against_ground_truth(result, gt)
+
+
+def test_hwpx_with_image_corrupt_falls_back_to_octet_stream(
+    hwpx_with_image_corrupt: Path,
+) -> None:
+    """PIL inspect failure must not raise — fallback to (0, 0, octet-stream)."""
+    result = extract(hwpx_with_image_corrupt)
+    assert len(result.images) == 1
+    img = result.images[0]
+    assert img.width == 0 and img.height == 0
+    assert img.mime_type == "application/octet-stream"
+    assert img.size_bytes > 0  # bytes still written to disk
+    assert img.file_path.endswith(".bin")
+    assert len(img.sha256) == 64  # sha256 computed regardless
+
+
+def test_hwpx_with_image_corrupt_matches_ground_truth(
+    hwpx_with_image_corrupt: Path,
+) -> None:
+    result = extract(hwpx_with_image_corrupt)
+    gt = load_ground_truth(hwpx_with_image_corrupt)
+    assert gt is not None
+    verify_against_ground_truth(result, gt)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Error path — corrupt file
 # ─────────────────────────────────────────────────────────────────────────────
 
