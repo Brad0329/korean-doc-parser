@@ -1,0 +1,222 @@
+{
+  "started_at": "2026-05-22T06:49:07.463024+00:00",
+  "finished_at": "2026-05-22T06:57:04.970976+00:00",
+  "fixtures_root": "C:\\Users\\user\\Documents\\doc_parcer\\samples",
+  "adapter_availability": {
+    "korean_doc_parser": true
+  },
+  "fixtures": [
+    "16.08.17 3억초과 개인사업자 대형가맹점 리스트 관련 유권해석.docx",
+    "16.09.27 청탁금지법상 '공무수행사인' 범위에 대한 질의.docx",
+    "3. 정성적 제안서_창업역량강화교육프로그램운영용역_(주)렛츠_231030-02.hwp",
+    "proposal_forest_startup.hwp",
+    "proposal_gyeongnam_fishery.hwp",
+    "proposal_wku.hwp",
+    "test_nara.hwp",
+    "●제안서(최종)_한국관광공사_성장 관광벤처기업 교육 컨설팅_(주)렛츠_20210509-2.pptx",
+    "스테이블코인 법제화 과제와 금융권의 대응방안_20250424.pdf",
+    "키움증권_스테이블코인.pdf"
+  ],
+  "runs": [
+    {
+      "adapter": "korean_doc_parser",
+      "fixture": "16.08.17 3억초과 개인사업자 대형가맹점 리스트 관련 유권해석.docx",
+      "extension": ".docx",
+      "ok": true,
+      "duration_ms": 432.5805000262335,
+      "peak_mem_mb": 5.489832878112793,
+      "text_length": 1300,
+      "table_count": 0,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 1.0,
+        "matched_keywords": 4,
+        "expected_keywords": 4,
+        "table_accuracy": 1.0,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 1.0,
+        "composite": 1.0
+      }
+    },
+    {
+      "adapter": "korean_doc_parser",
+      "fixture": "16.09.27 청탁금지법상 '공무수행사인' 범위에 대한 질의.docx",
+      "extension": ".docx",
+      "ok": true,
+      "duration_ms": 98.19980000611395,
+      "peak_mem_mb": 0.24975013732910156,
+      "text_length": 3777,
+      "table_count": 0,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 0.75,
+        "matched_keywords": 3,
+        "expected_keywords": 4,
+        "table_accuracy": 1.0,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 1.0,
+        "composite": 0.9375
+      }
+    },
+    {
+      "adapter": "korean_doc_parser",
+      "fixture": "3. 정성적 제안서_창업역량강화교육프로그램운영용역_(주)렛츠_231030-02.hwp",
+      "extension": ".hwp",
+      "ok": true,
+      "duration_ms": 74128.72030003928,
+      "peak_mem_mb": 24.57535457611084,
+      "text_length": 30382,
+      "table_count": 82,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 1.0,
+        "matched_keywords": 2,
+        "expected_keywords": 2,
+        "table_accuracy": 1.0,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 1.0,
+        "composite": 1.0
+      }
+    },
+    {
+      "adapter": "korean_doc_parser",
+      "fixture": "proposal_forest_startup.hwp",
+      "extension": ".hwp",
+      "ok": true,
+      "duration_ms": 113031.58379998058,
+      "peak_mem_mb": 23.34730339050293,
+      "text_length": 36183,
+      "table_count": 90,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 1.0,
+        "matched_keywords": 2,
+        "expected_keywords": 2,
+        "table_accuracy": 1.0,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 1.0,
+        "composite": 1.0
+      }
+    },
+    {
+      "adapter": "korean_doc_parser",
+      "fixture": "proposal_gyeongnam_fishery.hwp",
+      "extension": ".hwp",
+      "ok": true,
+      "duration_ms": 27578.835299937055,
+      "peak_mem_mb": 10.224922180175781,
+      "text_length": 21015,
+      "table_count": 68,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 1.0,
+        "matched_keywords": 2,
+        "expected_keywords": 2,
+        "table_accuracy": 1.0,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 1.0,
+        "composite": 1.0
+      }
+    },
+    {
+      "adapter": "korean_doc_parser",
+      "fixture": "proposal_wku.hwp",
+      "extension": ".hwp",
+      "ok": true,
+      "duration_ms": 50826.69429993257,
+      "peak_mem_mb": 13.221176147460938,
+      "text_length": 22199,
+      "table_count": 74,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 1.0,
+        "matched_keywords": 2,
+        "expected_keywords": 2,
+        "table_accuracy": 1.0,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 1.0,
+        "composite": 1.0
+      }
+    },
+    {
+      "adapter": "korean_doc_parser",
+      "fixture": "test_nara.hwp",
+      "extension": ".hwp",
+      "ok": true,
+      "duration_ms": 32651.397700072266,
+      "peak_mem_mb": 11.373566627502441,
+      "text_length": 21658,
+      "table_count": 47,
+      "image_count": 0,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 1.0,
+        "matched_keywords": 2,
+        "expected_keywords": 2,
+        "table_accuracy": 1.0,
+        "image_accuracy": 1.0,
+        "text_length_in_range": 1.0,
+        "composite": 1.0
+      }
+    },
+    {
+      "adapter": "korean_doc_parser",
+      "fixture": "스테이블코인 법제화 과제와 금융권의 대응방안_20250424.pdf",
+      "extension": ".pdf",
+      "ok": true,
+      "duration_ms": 4117.685299948789,
+      "peak_mem_mb": 53.06409549713135,
+      "text_length": 0,
+      "table_count": 0,
+      "image_count": 30,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 0.0,
+        "matched_keywords": 0,
+        "expected_keywords": 3,
+        "table_accuracy": 1.0,
+        "image_accuracy": 0.0,
+        "text_length_in_range": 1.0,
+        "composite": 0.5
+      }
+    },
+    {
+      "adapter": "korean_doc_parser",
+      "fixture": "키움증권_스테이블코인.pdf",
+      "extension": ".pdf",
+      "ok": true,
+      "duration_ms": 173612.4770999886,
+      "peak_mem_mb": 255.86890125274658,
+      "text_length": 68505,
+      "table_count": 88,
+      "image_count": 50,
+      "error": null,
+      "metrics": {
+        "keyword_recall": 1.0,
+        "matched_keywords": 5,
+        "expected_keywords": 5,
+        "table_accuracy": 1.0,
+        "image_accuracy": 0.0,
+        "text_length_in_range": 1.0,
+        "composite": 0.75
+      }
+    }
+  ],
+  "summary": {
+    "korean_doc_parser": {
+      "runs": 9,
+      "ok": 9,
+      "errors": 0,
+      "mean_duration_ms": 52942.019344436834,
+      "median_duration_ms": 32651.397700072266,
+      "mean_peak_mem_mb": 44.15721140967475,
+      "mean_composite": 0.9097222222222222
+    }
+  }
+}

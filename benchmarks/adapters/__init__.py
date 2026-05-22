@@ -8,12 +8,14 @@ from __future__ import annotations
 
 from .base import BaseAdapter, ParseOutput
 from .docling_adapter import DoclingAdapter
+from .kdp_adapter import KoreanDocParserAdapter
 from .legacy_adapter import LegacyFileParserAdapter
 from .marker_adapter import MarkerAdapter
 from .markitdown_adapter import MarkitdownAdapter
 from .unstructured_adapter import UnstructuredAdapter
 
 ALL_ADAPTERS: list[type[BaseAdapter]] = [
+    KoreanDocParserAdapter,
     MarkitdownAdapter,
     MarkerAdapter,
     DoclingAdapter,
@@ -25,6 +27,7 @@ __all__ = [
     "ALL_ADAPTERS",
     "BaseAdapter",
     "DoclingAdapter",
+    "KoreanDocParserAdapter",
     "LegacyFileParserAdapter",
     "MarkerAdapter",
     "MarkitdownAdapter",
