@@ -1,6 +1,6 @@
 [project]
 name = "korean-doc-parser-hwp"
-version = "0.1.0"
+version = "0.1.1"
 description = "HWP (Hangul Word Processor) parser extras for korean-doc-parser"
 requires-python = ">=3.11"
 license = { text = "GPL-3.0-or-later" }
