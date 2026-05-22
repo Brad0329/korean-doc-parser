@@ -29,6 +29,9 @@ __all__ = [
     "build_pdf_multipage",
     "build_pdf_simple",
     "build_pdf_with_image",
+    "build_pdf_with_image_cmyk",
+    "build_pdf_with_image_jpeg",
+    "build_pdf_with_multi_images",
     "build_pdf_with_table",
 ]
 
@@ -279,6 +282,131 @@ def build_pdf_with_image(dest_dir: Path) -> Path:
             "expected_image_count": 1,
             "expected_sections": ["PDF with Image Fixture"],
             "expected_text_length_range": [10, 500],
+        },
+    )
+    return path
+
+
+def build_pdf_with_image_jpeg(dest_dir: Path) -> Path:
+    """Single-page PDF embedding a 48x32 JPEG (RGB).
+
+    Exercises pypdf's ``/DCTDecode`` filter path. Different dimensions from the
+    PNG fixture so size assertions can distinguish them in test failures.
+    """
+    from io import BytesIO
+
+    from PIL import Image
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.utils import ImageReader
+    from reportlab.pdfgen import canvas
+
+    path = dest_dir / "pdf_with_image_jpeg.pdf"
+
+    jpg_buf = BytesIO()
+    Image.new("RGB", (48, 32), (0, 200, 100)).save(jpg_buf, format="JPEG", quality=80)
+    jpg_buf.seek(0)
+
+    c = canvas.Canvas(str(path), pagesize=A4)
+    c.drawString(72, 800, "PDF with JPEG Image")
+    c.drawImage(ImageReader(jpg_buf), 100, 700, width=48, height=32)
+    c.showPage()
+    c.save()
+
+    _write_gt(
+        path,
+        {
+            "expected_format": "pdf",
+            "expected_page_count": 1,
+            "expected_table_count": 0,
+            "expected_image_count": 1,
+            "expected_sections": ["PDF with JPEG Image"],
+            "expected_text_length_range": [10, 500],
+        },
+    )
+    return path
+
+
+def build_pdf_with_image_cmyk(dest_dir: Path) -> Path:
+    """Single-page PDF embedding a 40x40 CMYK JPEG.
+
+    Exercises the CMYK colorspace branch of pypdf's decoder. Scanned/print-ready
+    PDFs (common in 입찰공고) frequently embed CMYK JPEGs.
+    """
+    from io import BytesIO
+
+    from PIL import Image
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.utils import ImageReader
+    from reportlab.pdfgen import canvas
+
+    path = dest_dir / "pdf_with_image_cmyk.pdf"
+
+    cmyk_buf = BytesIO()
+    # CMYK with C=50% M=20% Y=70% K=10% — non-trivial colorspace
+    Image.new("CMYK", (40, 40), (128, 51, 178, 26)).save(cmyk_buf, format="JPEG", quality=80)
+    cmyk_buf.seek(0)
+
+    c = canvas.Canvas(str(path), pagesize=A4)
+    c.drawString(72, 800, "PDF with CMYK JPEG")
+    c.drawImage(ImageReader(cmyk_buf), 100, 700, width=40, height=40)
+    c.showPage()
+    c.save()
+
+    _write_gt(
+        path,
+        {
+            "expected_format": "pdf",
+            "expected_page_count": 1,
+            "expected_table_count": 0,
+            "expected_image_count": 1,
+            "expected_sections": ["PDF with CMYK JPEG"],
+            "expected_text_length_range": [10, 500],
+        },
+    )
+    return path
+
+
+def build_pdf_with_multi_images(dest_dir: Path) -> Path:
+    """Two-page PDF with one image per page — exercises per-page index matching.
+
+    Page 1: 24x24 blue PNG, Page 2: 24x24 yellow PNG. Verifies that pdfplumber
+    bbox / pypdf bitmap pairing stays correct across page boundaries.
+    """
+    from io import BytesIO
+
+    from PIL import Image
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.utils import ImageReader
+    from reportlab.pdfgen import canvas
+
+    path = dest_dir / "pdf_with_multi_images.pdf"
+
+    blue_buf = BytesIO()
+    Image.new("RGB", (24, 24), (0, 0, 255)).save(blue_buf, format="PNG")
+    blue_buf.seek(0)
+
+    yellow_buf = BytesIO()
+    Image.new("RGB", (24, 24), (255, 255, 0)).save(yellow_buf, format="PNG")
+    yellow_buf.seek(0)
+
+    c = canvas.Canvas(str(path), pagesize=A4)
+    c.drawString(72, 800, "Page 1 with Blue PNG")
+    c.drawImage(ImageReader(blue_buf), 100, 700, width=24, height=24)
+    c.showPage()
+    c.drawString(72, 800, "Page 2 with Yellow PNG")
+    c.drawImage(ImageReader(yellow_buf), 100, 700, width=24, height=24)
+    c.showPage()
+    c.save()
+
+    _write_gt(
+        path,
+        {
+            "expected_format": "pdf",
+            "expected_page_count": 2,
+            "expected_table_count": 0,
+            "expected_image_count": 2,
+            "expected_sections": ["Page 1 with Blue PNG", "Page 2 with Yellow PNG"],
+            "expected_text_length_range": [20, 500],
         },
     )
     return path

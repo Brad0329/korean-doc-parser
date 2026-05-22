@@ -20,6 +20,7 @@ classifiers = [
 ]
 dependencies = [
   "pdfplumber>=0.11",  # PDF parser (Phase 0 decision: self-implement)
+  "pypdf>=4.0",        # PDF bitmap extraction (v0.2 — BSD-3, ~2MB)
   "python-docx>=1.0",  # DOCX parser (Phase 0 decision: self-implement)
   "pillow>=10.0",      # Image dimension/mime inspection
 ]

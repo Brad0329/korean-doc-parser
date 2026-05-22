@@ -104,7 +104,7 @@ def test_extract_raises_parse_error_on_corrupt_pdf(tmp_path: Path) -> None:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Image metadata extraction (bitmap bytes deferred to v0.2)
+# Image bitmap extraction (v0.2 — pypdf-backed, real bytes)
 # ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -114,11 +114,23 @@ def test_pdf_with_image_records_image_metadata(pdf_with_image: Path) -> None:
     img = result.images[0]
     assert img.page_no == 1
     assert img.bbox is not None
-    assert img.width > 0
-    assert img.height > 0
-    # bitmap extraction deferred to v0.2 — placeholders documented
-    assert img.file_path == ""
-    assert img.sha256 == ""
+    assert img.width == 32
+    assert img.height == 32
+    assert img.mime_type == "image/png"
+
+
+def test_pdf_with_image_extracts_real_bitmap(pdf_with_image: Path) -> None:
+    """v0.2 invariant — file_path / sha256 are filled, file exists, sha matches bytes."""
+    import hashlib
+
+    result = extract(pdf_with_image)
+    img = result.images[0]
+    assert img.file_path != ""
+    file_path = Path(img.file_path)
+    assert file_path.exists()
+    bytes_on_disk = file_path.read_bytes()
+    assert hashlib.sha256(bytes_on_disk).hexdigest() == img.sha256
+    assert img.size_bytes == len(bytes_on_disk)
 
 
 def test_pdf_with_image_matches_ground_truth(pdf_with_image: Path) -> None:
@@ -126,6 +138,144 @@ def test_pdf_with_image_matches_ground_truth(pdf_with_image: Path) -> None:
     gt = load_ground_truth(pdf_with_image)
     assert gt is not None
     verify_against_ground_truth(result, gt)
+
+
+def test_pdf_with_image_jpeg_extracts_jpeg_bitmap(pdf_with_image_jpeg: Path) -> None:
+    """``/DCTDecode`` filter — pypdf returns JPEG bytes, PIL detects format."""
+    import hashlib
+
+    result = extract(pdf_with_image_jpeg)
+    assert len(result.images) == 1
+    img = result.images[0]
+    assert img.width == 48
+    assert img.height == 32
+    assert img.mime_type == "image/jpeg"
+    assert img.file_path != ""
+    assert img.size_bytes > 0
+    assert hashlib.sha256(Path(img.file_path).read_bytes()).hexdigest() == img.sha256
+
+
+def test_pdf_with_image_jpeg_matches_ground_truth(pdf_with_image_jpeg: Path) -> None:
+    result = extract(pdf_with_image_jpeg)
+    gt = load_ground_truth(pdf_with_image_jpeg)
+    assert gt is not None
+    verify_against_ground_truth(result, gt)
+
+
+def test_pdf_with_image_cmyk_extracts_cmyk_jpeg(pdf_with_image_cmyk: Path) -> None:
+    """CMYK colorspace — PIL detects JPEG format, mime is image/jpeg, bitmap valid."""
+    result = extract(pdf_with_image_cmyk)
+    assert len(result.images) == 1
+    img = result.images[0]
+    assert img.width == 40
+    assert img.height == 40
+    assert img.mime_type == "image/jpeg"
+    assert img.file_path != ""
+
+
+def test_pdf_with_image_cmyk_matches_ground_truth(pdf_with_image_cmyk: Path) -> None:
+    result = extract(pdf_with_image_cmyk)
+    gt = load_ground_truth(pdf_with_image_cmyk)
+    assert gt is not None
+    verify_against_ground_truth(result, gt)
+
+
+def test_pdf_with_multi_images_assigns_correct_page_nos(
+    pdf_with_multi_images: Path,
+) -> None:
+    """Per-page index matching must preserve page assignment across pages."""
+    result = extract(pdf_with_multi_images)
+    assert len(result.images) == 2
+    page_nos = sorted(img.page_no for img in result.images)
+    assert page_nos == [1, 2]
+    # Each image's bitmap is independent — different sha256.
+    shas = {img.sha256 for img in result.images}
+    assert len(shas) == 2
+    for img in result.images:
+        assert img.width == 24
+        assert img.height == 24
+        assert img.mime_type == "image/png"
+        assert Path(img.file_path).exists()
+
+
+def test_pdf_with_multi_images_matches_ground_truth(
+    pdf_with_multi_images: Path,
+) -> None:
+    result = extract(pdf_with_multi_images)
+    gt = load_ground_truth(pdf_with_multi_images)
+    assert gt is not None
+    verify_against_ground_truth(result, gt)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Bitmap defensive paths — count mismatch + decoder failure fallbacks
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_extract_images_falls_back_when_pypdf_page_missing(
+    pdf_with_image: Path,
+) -> None:
+    """``pypdf_page=None`` keeps pdfplumber bbox but leaves bitmap placeholders.
+
+    Mirrors the v0.2 contract: pypdf failure on one page must not corrupt
+    the result — the parse still succeeds with bbox-only images.
+    """
+    import pdfplumber
+
+    from korean_doc_parser.core import ExtractedImage
+    from korean_doc_parser.parsers.pdf import PdfParser
+
+    out: list[ExtractedImage] = []
+    with pdfplumber.open(pdf_with_image) as pdf:
+        PdfParser._extract_images(pdf.pages[0], None, page_no=1, out=out)
+    assert len(out) == 1
+    assert out[0].file_path == ""
+    assert out[0].sha256 == ""
+    assert out[0].size_bytes == 0
+    # pdfplumber metadata still populated
+    assert out[0].bbox is not None
+    assert out[0].width > 0
+
+
+def test_inspect_size_returns_zero_on_invalid_bytes() -> None:
+    """PIL fallback when pypdf hands us bytes it couldn't decode itself."""
+    from korean_doc_parser.parsers.pdf import _inspect_size
+
+    assert _inspect_size(b"not an image, garbage bytes") == (0, 0)
+
+
+def test_inspect_size_reads_valid_png_bytes() -> None:
+    """Sanity check the happy path of the size inspector."""
+    from io import BytesIO
+
+    from PIL import Image
+
+    from korean_doc_parser.parsers.pdf import _inspect_size
+
+    buf = BytesIO()
+    Image.new("RGB", (17, 23), (10, 20, 30)).save(buf, format="PNG")
+    assert _inspect_size(buf.getvalue()) == (17, 23)
+
+
+def test_collect_bitmaps_handles_decoder_exception() -> None:
+    """A single faulty image entry yields an empty placeholder; siblings survive."""
+    from korean_doc_parser.parsers.pdf import _collect_bitmaps
+
+    class _Boom:
+        @property
+        def data(self) -> bytes:
+            raise RuntimeError("simulated pypdf decoder failure")
+
+        @property
+        def image(self) -> None:
+            return None
+
+    class _FakePage:
+        def __init__(self) -> None:
+            self.images = [_Boom()]
+
+    results = _collect_bitmaps(_FakePage(), page_no=99)  # type: ignore[arg-type]
+    assert results == [("", "", 0, 0, 0, "application/octet-stream")]
 
 
 # ─────────────────────────────────────────────────────────────────────────────

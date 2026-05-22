@@ -25,6 +25,9 @@ __all__ = [
     "pdf_multipage",
     "pdf_simple",
     "pdf_with_image",
+    "pdf_with_image_cmyk",
+    "pdf_with_image_jpeg",
+    "pdf_with_multi_images",
     "pdf_with_table",
 ]
 
@@ -93,3 +96,18 @@ def pdf_with_table(fixtures_dir: Path) -> Path:
 @pytest.fixture(scope="session")
 def pdf_with_image(fixtures_dir: Path) -> Path:
     return _synth.build_pdf_with_image(fixtures_dir)
+
+
+@pytest.fixture(scope="session")
+def pdf_with_image_jpeg(fixtures_dir: Path) -> Path:
+    return _synth.build_pdf_with_image_jpeg(fixtures_dir)
+
+
+@pytest.fixture(scope="session")
+def pdf_with_image_cmyk(fixtures_dir: Path) -> Path:
+    return _synth.build_pdf_with_image_cmyk(fixtures_dir)
+
+
+@pytest.fixture(scope="session")
+def pdf_with_multi_images(fixtures_dir: Path) -> Path:
+    return _synth.build_pdf_with_multi_images(fixtures_dir)
