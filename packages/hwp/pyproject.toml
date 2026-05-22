@@ -3,7 +3,7 @@ name = "korean-doc-parser-hwp"
 version = "0.1.1"
 description = "HWP (Hangul Word Processor) parser extras for korean-doc-parser"
 requires-python = ">=3.11"
-license = { text = "GPL-3.0-or-later" }
+license = { text = "AGPL-3.0-or-later" }
 authors = [
   { name = "Brad", email = "vanasso.kr@gmail.com" },
 ]
@@ -11,7 +11,7 @@ keywords = ["hwp", "hangul", "korean", "document", "parser"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
   "Operating System :: Microsoft :: Windows",
   "Operating System :: POSIX :: Linux",
   "Programming Language :: Python :: 3",
@@ -21,7 +21,10 @@ classifiers = [
 ]
 dependencies = [
   "korean-doc-parser",
-  # pyhwp / pywin32 are added when the parser is implemented (Phase 1 task #11)
+  "pyhwp>=0.1b15",   # AGPLv3+ — HWP 5.x binary parser (worklog/003 Linux 호환성 확인)
+  "six>=1.16",       # pyhwp 0.1b15 의 미선언 transitive dep (workaround)
+  "beautifulsoup4>=4.12",  # _xhtml_to_markdown
+  "lxml>=5.0",       # BeautifulSoup XML parser backend
 ]
 
 [project.urls]

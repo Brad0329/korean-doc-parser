@@ -113,7 +113,8 @@ module = [
   "pdfplumber.*",
   "docx.*",
   "markitdown.*",
-  "pyhwp.*",
+  "hwp5.*",
+  "bs4.*",
   "win32com.*",
   "pywintypes",
 ]
@@ -129,6 +130,9 @@ testpaths = [
   "packages/hwp/tests",
   "packages/pipeline/tests",
 ]
+# The ``tests`` package (packages/core/tests/_gt.py, _synth.py) is shared
+# across parser-package test suites.
+pythonpath = ["packages/core"]
 addopts = [
   "-ra",
   "--strict-markers",

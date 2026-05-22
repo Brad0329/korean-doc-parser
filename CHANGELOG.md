@@ -19,26 +19,37 @@ LibreOffice 4포맷(DOC/PPTX/PPT/이미지) 은 v0.3 으로 분리.
 
 ### Added (toward v0.2.0)
 
+- **HWP 파서** (`korean_doc_parser_hwp.HwpParser`, `pyhwp` 기반):
+  - `packages/hwp/` 격리, 자동 등록 — `import korean_doc_parser_hwp` 만 하면
+    `korean_doc_parser.extract(...)` 가 `.hwp` 를 처리
+  - pyhwp 의 `HTMLTransform` → XHTML → BeautifulSoup 로 마크다운 + ParsedTable 분리
+  - 실 픽스처 5건 통과 — 도메인 다양성(인천/원광대/경남귀어/산림/창업), 크기
+    228 KB ~ 22 MB 범위, 표 47 ~ 90건. `samples/` 는 git untracked, 픽스처 미존재 시
+    `pytest.skip` 가드
+  - lets_portal 1차 작업(`_parse_hwp_pyhwp` + `_xhtml_to_markdown`) 의 모듈화 이전
 - **PDF 비트맵 실 추출** (`korean_doc_parser.parsers.pdf`, `pypdf` 추가):
   - v0.1.0 의 `ExtractedImage.file_path` / `sha256` placeholder 제거 — 실 tempfile +
     sha256 + width/height/size_bytes/mime_type 모두 실값으로 채워짐
   - pdfplumber bbox + pypdf bitmap 의 per-page 인덱스 매칭 (count 불일치 시 방어 fallback)
   - 합성 픽스처 3건 추가 — JPEG (`/DCTDecode`), CMYK JPEG, multi-page multi-image
-- **새 의존성:** `pypdf>=4.0` (core 의존, BSD-3, ~2MB)
+- **새 의존성:**
+  - `pypdf>=4.0` (core, BSD-3, ~2MB)
+  - `pyhwp>=0.1b15` (extras `[hwp]`, **AGPLv3+** — 사내 라이브러리 사용에 영향 없음, 격리 유지)
+  - `six>=1.16`, `beautifulsoup4>=4.12`, `lxml>=5.0` (`[hwp]` extras transitives)
+- **`packages/hwp/pyproject.toml` license 정정** — `GPL-3.0-or-later` → `AGPL-3.0-or-later`
+  (pyhwp 실 라이선스 = AGPLv3+). 격리 전략 자체는 동일하게 작동.
 
-### Planned (v0.2.0, minor — 아직 남음)
+### Planned (v0.2.0 출시 잔여)
 
-- **HWP 파서** (`korean_doc_parser.parsers.hwp.HwpParser`, `pyhwp` 기반):
-  - `packages/hwp/` 안에 격리 (GPL v3 viral 영향 차단)
-  - `pip install korean-doc-parser[hwp]` 옵트인
-  - 픽스처 N≥5 통과 + Linux/Windows 동일 결과 검증
-- **OS 매트릭스 변경 없음** (Ubuntu LTS + Windows latest × Python 3.11 유지)
+- v0.2 출구 게이트(`worklog/006` § 7) 충족 후 `v0.2.0` 태그 + 본 [Unreleased] 를
+  [0.2.0] 으로 승격. 잔여 작업: 벤치마크 측정 + 회귀 ±5% 확인.
 
 ### Deferred to v0.3 or later
 
 - LibreOffice 경유 4포맷(DOC/PPTX/PPT/이미지) — system 의존성 boundary 분리
-- HWP COM 폴백 — pyhwp 단독 통과율 ≥ 90% 시 미진입
+- HWP COM 폴백 — pyhwp 단독 통과율 ≥ 90% 시 미진입 (현 픽스처 5/5 통과)
 - HWP kordoc 포팅 — pyhwp 단독 통과율 ≤ 70% 시 진입
+- HWP 이미지 추출 — XHTML 의 `bindata/` 경로를 `ExtractedImage` 로 승격
 - PDF CCITTFax 픽스처 — reportlab 으로 합성 어려움, 실 스캔 PDF 픽스처 진입 시점에 추가
 
 ---
