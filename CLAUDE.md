@@ -301,6 +301,43 @@ pre-commit hook 자동화 권장 (Phase 1 Day 1-2 구성).
 다음 세션 시작 시 가장 먼저 읽을 worklog: 최신 release (`worklog/007`) 의 § 5
 "다음 세션이 알아야 할 것".
 
+## Claude Code 권한 정책 (2026-05-24)
+
+`.claude/settings.json` 에 자주 쓰는 패턴이 박혀 있어 prompt 빈도가 낮습니다.
+새 도구가 자주 prompt 되면 거기에 추가하세요. 카테고리:
+
+### 자동 허용 (allow) — 광범위 패턴
+- **uv / Python**: `uv *`, `pip install *`, `python -c *`, `python -m *`
+- **git 읽기**: `git status*`, `git diff*`, `git log*`, `git show*`, `git ls-*`,
+  `git branch*`, `git rev-parse*`, `git config --get*`, `git remote -v`,
+  `git fetch*`, `git pull*`
+- **git 쓰기 (안전 범위)**: `git add *`, `git rm *`, `git mv *`, `git commit *`,
+  `git push origin main`, `git push origin v*`, `git push --tags*`, `git tag *`,
+  `git stash*`
+- **GitHub**: `gh *` (전체 — issue / pr / api 등)
+- **파일 작업**: `cp *`, `mv *`, `mkdir *`, `ls*`, `pwd`, `find *`, `file *`,
+  `wc *`, `diff *`
+- **기타**: `echo *`, `test *`, `until *`, `wait`, `true`, `false`, `pre-commit *`
+
+### 명시적 거부 (deny) — 항상 prompt
+의도하지 않은 데이터 손실 / 협력자 충돌 방지:
+- `rm -rf *`, `rm -fr *` (재귀 삭제)
+- `git push --force*`, `git push -f*` (main 강제 푸시 — Git 운영 §3 금지)
+- `git reset --hard*`, `git clean -f*`, `git checkout --*`, `git restore --staged*`
+- `git commit --amend*` (Git 운영 §3 금지 — push 후 amend 안 됨)
+- `git rebase*` (-i 면 hang, 일반 rebase 도 의도 확인)
+- `sudo *`, `chmod *`, `chown *` (OS 권한 변경)
+
+### 새 패턴 추가가 필요할 때
+- 작업 중 같은 도구로 2번 이상 prompt 되면 → `.claude/settings.json` 의 `allow` 에 추가
+- `update-config` skill 활용 가능 (`/update-config`)
+- 광범위 패턴(`uv *` 등) 을 선호, 한 명령씩 박지 말 것 (settings.local.json 의
+  fragmented 이력 참고 — 같은 실수 반복 금지)
+
+### 개인 환경의 추가 항목
+`.claude/settings.local.json` 은 git untracked. 본인 PC 에서만 쓰는 임시 권한
+(예: `start C:/.../file.html` 같은 OS-specific 실행) 은 거기 두세요.
+
 ## 한 줄 요약
 
 > **사내 private 라이브러리.** 단일 파일 포터빌리티 + 패키지 경계 + SemVer + 회귀 테스트 의무. 영문 docs/외부 SLA 등 공개 OSS 의무는 삭제. 핵심 원칙(이유/제약/실패 만 기록)은 lets_portal 과 동일. `HANDOVER.md` 가 컨텍스트의 단일 진실원.

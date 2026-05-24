@@ -38,8 +38,8 @@ ENV/
 *.swo
 *.swn
 
-# Claude Code local settings
-.claude/
+# Claude Code — project-shared settings.json 은 tracked, 개인 환경(local) 은 untracked
+.claude/settings.local.json
 
 # OS
 .DS_Store
