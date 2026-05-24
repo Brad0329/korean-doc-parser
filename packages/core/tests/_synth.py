@@ -33,6 +33,10 @@ __all__ = [
     "build_pdf_with_image_jpeg",
     "build_pdf_with_multi_images",
     "build_pdf_with_table",
+    "build_pptx_multislide",
+    "build_pptx_simple",
+    "build_pptx_with_image",
+    "build_pptx_with_table",
 ]
 
 
@@ -640,6 +644,145 @@ def build_hwpx_with_image_corrupt(dest_dir: Path) -> Path:
             "expected_image_count": 1,
             "expected_sections": ["손상 이미지 HWPX"],
             "expected_text_length_range": [5, 200],
+        },
+    )
+    return path
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PPTX — python-pptx synthesis. Korean fixtures verify markitdown's slide-by-
+# slide unicode handling; an image fixture proves the placeholder pattern.
+# Real-world Korean PPTX coverage comes from `samples/*.pptx` (skip-guarded).
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def build_pptx_simple(dest_dir: Path) -> Path:
+    """1-slide PPTX with a Korean title + body. Quickest regression target."""
+    from pptx import Presentation
+    from pptx.util import Inches
+
+    path = dest_dir / "pptx_simple.pptx"
+    prs = Presentation()
+    prs.core_properties.title = "합성 PPTX 단일 슬라이드"
+    slide = prs.slides.add_slide(prs.slide_layouts[1])
+    slide.shapes.title.text = "합성 PPTX 단일 슬라이드"
+    body = slide.placeholders[1]
+    body.text = "이것은 합성 테스트용 한국어 PPTX 본문입니다."
+    body.text_frame.add_paragraph().text = "두 번째 단락."
+    _ = Inches  # silence unused-import; keeps the helper import stable
+    prs.save(str(path))
+
+    _write_gt(
+        path,
+        {
+            "expected_format": "pptx",
+            "expected_table_count": 0,
+            "expected_image_count": 0,
+            "expected_keywords": ["합성", "한국어 PPTX"],
+            "expected_text_length_range": [40, 1500],
+            "expected_title": "합성 PPTX 단일 슬라이드",
+        },
+    )
+    return path
+
+
+def build_pptx_multislide(dest_dir: Path) -> Path:
+    """3-slide PPTX — exercises markitdown's per-slide section markers."""
+    from pptx import Presentation
+
+    path = dest_dir / "pptx_multislide.pptx"
+    prs = Presentation()
+    for i in range(1, 4):
+        slide = prs.slides.add_slide(prs.slide_layouts[1])
+        slide.shapes.title.text = f"슬라이드 {i}"
+        slide.placeholders[1].text = f"이 슬라이드의 본문은 {i}번입니다."
+    prs.save(str(path))
+
+    _write_gt(
+        path,
+        {
+            "expected_format": "pptx",
+            "expected_table_count": 0,
+            "expected_image_count": 0,
+            "expected_keywords": ["슬라이드 1", "슬라이드 2", "슬라이드 3"],
+            "expected_text_length_range": [60, 2000],
+        },
+    )
+    return path
+
+
+def build_pptx_with_table(dest_dir: Path) -> Path:
+    """PPTX with a single 3-row x 3-column table on slide 1."""
+    from pptx import Presentation
+    from pptx.util import Inches
+
+    path = dest_dir / "pptx_with_table.pptx"
+    prs = Presentation()
+    slide = prs.slides.add_slide(prs.slide_layouts[5])  # title + blank
+    slide.shapes.title.text = "표 포함 PPTX"
+
+    shape = slide.shapes.add_table(
+        rows=3,
+        cols=3,
+        left=Inches(1),
+        top=Inches(2),
+        width=Inches(6),
+        height=Inches(2),
+    )
+    tbl = shape.table
+    headers = ["항목", "값", "비고"]
+    for i, h in enumerate(headers):
+        tbl.cell(0, i).text = h
+    tbl.cell(1, 0).text = "매출"
+    tbl.cell(1, 1).text = "1,000"
+    tbl.cell(1, 2).text = "단위: 백만 원"
+    tbl.cell(2, 0).text = "비용"
+    tbl.cell(2, 1).text = "600"
+    tbl.cell(2, 2).text = "고정비 포함"
+
+    prs.save(str(path))
+
+    _write_gt(
+        path,
+        {
+            "expected_format": "pptx",
+            "expected_table_count": 0,  # v0.3 contract: tables stay inline in markdown
+            "expected_image_count": 0,
+            "expected_keywords": ["표 포함 PPTX", "매출", "비용"],
+            "expected_text_length_range": [30, 2000],
+        },
+    )
+    return path
+
+
+def build_pptx_with_image(dest_dir: Path) -> Path:
+    """PPTX embedding a 64x64 red square PNG on slide 1."""
+    from io import BytesIO
+
+    from PIL import Image
+    from pptx import Presentation
+    from pptx.util import Inches
+
+    path = dest_dir / "pptx_with_image.pptx"
+    prs = Presentation()
+    slide = prs.slides.add_slide(prs.slide_layouts[5])
+    slide.shapes.title.text = "이미지 포함 PPTX"
+
+    png_buf = BytesIO()
+    Image.new("RGB", (64, 64), (255, 0, 0)).save(png_buf, format="PNG")
+    png_buf.seek(0)
+    slide.shapes.add_picture(png_buf, Inches(1), Inches(2), Inches(1), Inches(1))
+
+    prs.save(str(path))
+
+    _write_gt(
+        path,
+        {
+            "expected_format": "pptx",
+            "expected_table_count": 0,
+            "expected_image_count": 0,  # v0.3: bitmap promotion deferred
+            "expected_keywords": ["이미지 포함 PPTX"],
+            "expected_text_length_range": [10, 2000],
         },
     )
     return path

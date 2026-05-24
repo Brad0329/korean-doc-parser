@@ -1,6 +1,6 @@
 [project]
 name = "korean-doc-parser"
-version = "0.2.1"
+version = "0.3.0"
 description = "HWP-aware document-to-markdown library for Korean documents"
 requires-python = ">=3.11"
 license = { text = "MIT" }
@@ -24,6 +24,13 @@ dependencies = [
   "python-docx>=1.0",  # DOCX parser (Phase 0 decision: self-implement)
   "pillow>=10.0",      # Image dimension/mime inspection
 ]
+
+# Optional extras — opt-in heavy dependencies isolated from the core
+[project.optional-dependencies]
+# PPTX support via markitdown (Phase 0 decision: delegate, text 23K vs self 170).
+# Heavy ML stack: onnxruntime + numpy + magika ~80MB. Opt-in only.
+# Acceptance pending v0.3 N>=5 fixture evaluation (worklog/010).
+pptx = ["markitdown[pptx]>=0.1.5"]
 
 [project.urls]
 Homepage = "https://github.com/Brad0329/korean-doc-parser"
