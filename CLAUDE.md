@@ -289,14 +289,17 @@ pre-commit hook 자동화 권장 (Phase 1 Day 1-2 구성).
 - **7포맷** = HWP / HWPX / PDF / DOCX / DOC / PPTX / PPT
 - **우선순위** = 정확도 > 속도 > 기능 다양성
 
-## 첫 작업 시 (Phase 0) — 진행 상황
+## 출시 진행 상황 (2026-05-22 기준)
 
-- [x] `HANDOVER.md` § 3 의 6가지 결정 사항 답 작성 (2026-05-15)
-- [x] `worklog/000_handover_received.md` 작성
-- [ ] Phase 0 벤치마크 스크립트 작성 (markitdown/marker/docling/unstructured vs 현 file_parser)
-- [ ] 벤치마크 실행 + 결과 표 정리
-- [ ] 포맷별 "위임 vs 자체" 결정 문서화
-- [ ] Phase 0 출구 게이트 통과 → Phase 1 진입
+- ✅ **Phase 0** (의사결정) — `HANDOVER.md` § 3 답 + 경쟁 라이브러리 벤치마크 +
+  포맷별 "위임 vs 자체" 결정 (`worklog/001`)
+- ✅ **v0.1.0** — PDF / DOCX / HWPX 3포맷 (`worklog/002`)
+- ✅ **v0.1.1** — 3포맷 마감 + coverage 게이트 활성화 (`worklog/005`)
+- ✅ **v0.2.0** — HWP 추가 + PDF 비트맵 실 추출 (`worklog/007`)
+- ⏳ **v0.3** — LibreOffice 경유 DOC/PPTX/PPT — 진입 결정 대기
+
+다음 세션 시작 시 가장 먼저 읽을 worklog: 최신 release (`worklog/007`) 의 § 5
+"다음 세션이 알아야 할 것".
 
 ## 한 줄 요약
 
