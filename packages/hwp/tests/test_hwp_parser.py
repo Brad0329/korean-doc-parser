@@ -8,6 +8,7 @@ tests still validate the parser's wiring and the XHTML→markdown helpers.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from tests._gt import load_ground_truth, verify_against_ground_truth
@@ -19,6 +20,9 @@ from korean_doc_parser_hwp.parser import (
     _html_table_rows,
     _xhtml_to_markdown_and_tables,
 )
+
+if TYPE_CHECKING:
+    from korean_doc_parser import ParseResult
 
 pytestmark = pytest.mark.hwp
 
@@ -43,61 +47,69 @@ def test_hwp_parser_supported_extensions() -> None:
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-def test_hwp_test_nara_matches_ground_truth(hwp_test_nara: Path) -> None:
-    result = extract(hwp_test_nara)
+def test_hwp_test_nara_matches_ground_truth(
+    hwp_test_nara: Path,
+    hwp_test_nara_result: ParseResult,
+) -> None:
     gt = load_ground_truth(hwp_test_nara)
     assert gt is not None
-    verify_against_ground_truth(result, gt)
+    verify_against_ground_truth(hwp_test_nara_result, gt)
 
 
-def test_hwp_wku_matches_ground_truth(hwp_wku: Path) -> None:
-    result = extract(hwp_wku)
+def test_hwp_wku_matches_ground_truth(
+    hwp_wku: Path,
+    hwp_wku_result: ParseResult,
+) -> None:
     gt = load_ground_truth(hwp_wku)
     assert gt is not None
-    verify_against_ground_truth(result, gt)
+    verify_against_ground_truth(hwp_wku_result, gt)
 
 
-def test_hwp_gyeongnam_fishery_matches_ground_truth(hwp_gyeongnam_fishery: Path) -> None:
-    result = extract(hwp_gyeongnam_fishery)
+def test_hwp_gyeongnam_fishery_matches_ground_truth(
+    hwp_gyeongnam_fishery: Path,
+    hwp_gyeongnam_fishery_result: ParseResult,
+) -> None:
     gt = load_ground_truth(hwp_gyeongnam_fishery)
     assert gt is not None
-    verify_against_ground_truth(result, gt)
+    verify_against_ground_truth(hwp_gyeongnam_fishery_result, gt)
 
 
-def test_hwp_forest_startup_matches_ground_truth(hwp_forest_startup: Path) -> None:
-    result = extract(hwp_forest_startup)
+def test_hwp_forest_startup_matches_ground_truth(
+    hwp_forest_startup: Path,
+    hwp_forest_startup_result: ParseResult,
+) -> None:
     gt = load_ground_truth(hwp_forest_startup)
     assert gt is not None
-    verify_against_ground_truth(result, gt)
+    verify_against_ground_truth(hwp_forest_startup_result, gt)
 
 
 def test_hwp_proposal_consulting_matches_ground_truth(
     hwp_proposal_consulting: Path,
+    hwp_proposal_consulting_result: ParseResult,
 ) -> None:
-    result = extract(hwp_proposal_consulting)
     gt = load_ground_truth(hwp_proposal_consulting)
     assert gt is not None
-    verify_against_ground_truth(result, gt)
+    verify_against_ground_truth(hwp_proposal_consulting_result, gt)
 
 
-def test_hwp_test_nara_extracts_korean_text(hwp_test_nara: Path) -> None:
+def test_hwp_test_nara_extracts_korean_text(hwp_test_nara_result: ParseResult) -> None:
     """Smoke check: at least 50% of markdown chars must be Korean syllables.
 
     Guards against the mojibake regression where pyhwp output gets read with
     the wrong codec and we silently ship 0-hangul markdown.
     """
-    result = extract(hwp_test_nara)
-    hangul = sum(1 for c in result.markdown if 0xAC00 <= ord(c) <= 0xD7AF)
-    assert hangul > len(result.markdown) * 0.4, (
-        f"only {hangul}/{len(result.markdown)} Korean chars — likely encoding regression"
+    hangul = sum(1 for c in hwp_test_nara_result.markdown if 0xAC00 <= ord(c) <= 0xD7AF)
+    assert hangul > len(hwp_test_nara_result.markdown) * 0.4, (
+        f"only {hangul}/{len(hwp_test_nara_result.markdown)} Korean chars — likely encoding regression"
     )
 
 
-def test_hwp_test_nara_tables_have_consistent_columns(hwp_test_nara: Path) -> None:
+def test_hwp_test_nara_tables_have_consistent_columns(
+    hwp_test_nara_result: ParseResult,
+) -> None:
     """Every row in a ParsedTable must have the same column count (post-normalize)."""
-    result = extract(hwp_test_nara)
-    assert result.tables, "expected at least one table"
-    for t in result.tables:
+    assert hwp_test_nara_result.tables, "expected at least one table"
+    for t in hwp_test_nara_result.tables:
         if not t.rows:
             continue
         widths = {len(row) for row in t.rows}

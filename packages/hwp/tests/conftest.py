@@ -4,13 +4,26 @@ Real HWP fixtures live in ``<repo>/samples/*.hwp`` and are NOT committed to
 git (private inputs — only the per-file ``*.gt.json`` ground truth is shared).
 Each fixture skips when its source file is absent so a fresh clone (or CI
 without secrets) can still run the rest of the suite.
+
+Two-tier fixture design (v0.2.1):
+* ``hwp_<name>`` — returns the ``Path``. Use for corrupt-handling tests,
+  registration tests, or anywhere only the file path is needed.
+* ``hwp_<name>_result`` — session-scoped, calls :func:`extract` exactly once
+  per pytest session and shares the :class:`ParseResult` across tests. Use for
+  all assertions about the parsed output. Trimmed v0.2.0 HWP regression time
+  from ~5min 53s to ~3min 50s by removing 4 redundant ``extract`` calls
+  (``test_nara`` was being parsed 3 times across the suite).
 """
 
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
+
+if TYPE_CHECKING:
+    from korean_doc_parser import ParseResult
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _SAMPLES_DIR = _REPO_ROOT / "samples"
@@ -22,6 +35,9 @@ def _hwp_or_skip(name: str) -> Path:
     if not p.is_file():
         pytest.skip(f"HWP fixture missing: {p}")
     return p
+
+
+# ─── Path fixtures (cheap) ────────────────────────────────────────────────
 
 
 @pytest.fixture(scope="session")
@@ -50,3 +66,39 @@ def hwp_forest_startup() -> Path:
 def hwp_proposal_consulting() -> Path:
     """Pre-existing fixture from before v0.2 (had legacy GT format, updated)."""
     return _hwp_or_skip("3. 정성적 제안서_창업역량강화교육프로그램운영용역_(주)렛츠_231030-02.hwp")
+
+
+# ─── ParseResult fixtures (extract once per session) ──────────────────────
+
+
+def _extract(path: Path) -> ParseResult:
+    """Local import — extract pulls in the parser side-effects on first use."""
+    import korean_doc_parser_hwp  # noqa: F401  ─ registers HwpParser
+    from korean_doc_parser import extract
+
+    return extract(path)
+
+
+@pytest.fixture(scope="session")
+def hwp_test_nara_result(hwp_test_nara: Path) -> ParseResult:
+    return _extract(hwp_test_nara)
+
+
+@pytest.fixture(scope="session")
+def hwp_wku_result(hwp_wku: Path) -> ParseResult:
+    return _extract(hwp_wku)
+
+
+@pytest.fixture(scope="session")
+def hwp_gyeongnam_fishery_result(hwp_gyeongnam_fishery: Path) -> ParseResult:
+    return _extract(hwp_gyeongnam_fishery)
+
+
+@pytest.fixture(scope="session")
+def hwp_forest_startup_result(hwp_forest_startup: Path) -> ParseResult:
+    return _extract(hwp_forest_startup)
+
+
+@pytest.fixture(scope="session")
+def hwp_proposal_consulting_result(hwp_proposal_consulting: Path) -> ParseResult:
+    return _extract(hwp_proposal_consulting)
