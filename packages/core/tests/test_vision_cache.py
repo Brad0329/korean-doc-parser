@@ -91,3 +91,52 @@ def test_cache_persists_across_instances(tmp_path: Path) -> None:
     cache_b = VisionCache(db)
     fetched = cache_b.get("persisted", "claude-sonnet-4-5")
     assert fetched is not None
+
+
+# ───────────────────────────────────────────────────────────────────────────
+# v0.4.3 — stats() expanded shape (worklog/015)
+# ───────────────────────────────────────────────────────────────────────────
+
+
+def test_stats_empty_cache_returns_zeros(tmp_path: Path) -> None:
+    """Brand-new cache: total 0, empty maps, last_7 = 0."""
+    cache = VisionCache(tmp_path / "cache.db")
+    stats = cache.stats()
+    assert stats["total_rows"] == 0
+    assert stats["total_saved_krw"] == 0.0
+    assert stats["by_model"] == {}
+    assert stats["by_date"] == {}
+    assert stats["last_7_days_saved_krw"] == 0.0
+
+
+def test_stats_total_saved_and_per_model_cost(tmp_path: Path) -> None:
+    cache = VisionCache(tmp_path / "cache.db")
+    cache.put(_make_label("a", model="claude-sonnet-4-5"))  # 8.25
+    cache.put(_make_label("b", model="claude-sonnet-4-5"))  # 8.25
+    cache.put(_make_label("c", model="claude-haiku-4-5"))  # 8.25 (fixture default)
+    stats = cache.stats()
+    assert stats["total_rows"] == 3
+    assert stats["total_saved_krw"] == round(8.25 * 3, 2)
+    assert stats["by_model"]["claude-sonnet-4-5"]["saved_krw"] == round(8.25 * 2, 2)
+    assert stats["by_model"]["claude-haiku-4-5"]["saved_krw"] == 8.25
+
+
+def test_stats_by_date_groups_per_day_and_model(tmp_path: Path) -> None:
+    """All rows from this test run share today's date → one by_date entry
+    with both models nested inside."""
+    cache = VisionCache(tmp_path / "cache.db")
+    cache.put(_make_label("a", model="claude-sonnet-4-5"))
+    cache.put(_make_label("b", model="claude-haiku-4-5"))
+    stats = cache.stats()
+    assert len(stats["by_date"]) == 1
+    only_day = next(iter(stats["by_date"].values()))
+    assert only_day["rows"] == 2
+    assert set(only_day["by_model"].keys()) == {"claude-sonnet-4-5", "claude-haiku-4-5"}
+
+
+def test_stats_last_7_days_includes_today(tmp_path: Path) -> None:
+    """SQLite ``date('now','-6 days')`` is inclusive of today's rows."""
+    cache = VisionCache(tmp_path / "cache.db")
+    cache.put(_make_label("today"))
+    stats = cache.stats()
+    assert stats["last_7_days_saved_krw"] == 8.25

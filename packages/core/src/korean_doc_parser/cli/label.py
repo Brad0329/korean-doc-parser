@@ -72,6 +72,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
 
+    if args.stats:
+        return _run_stats(args)
+
     try:
         client = _build_client(args)
     except KoreanDocParserError as exc:
@@ -138,6 +141,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "--output",
         default="-",
         help="Output file path (default: stdout).",
+    )
+    p.add_argument(
+        "--stats",
+        action="store_true",
+        help="Print cache stats as JSON (rows / saved cost by model+date) and exit. "
+        "Other positional/document args are ignored.",
     )
     return p
 
@@ -242,6 +251,32 @@ def _run_from_document(client: VisionClient, doc_path: Path, args: argparse.Name
         f"{elapsed:.0f}초 / cache_hits: {cache_hits}",
         file=sys.stderr,
     )
+    return 0
+
+
+def _run_stats(args: argparse.Namespace) -> int:
+    """``--stats`` — dump cache.stats() as JSON and exit (worklog/015).
+
+    Does not touch the Anthropic API or even the Vision client. If the cache
+    file is missing we refuse to create an empty one (silent creation would
+    mask user errors like a typo in ``--cache-path``).
+    """
+    cache_path = Path(args.cache_path).expanduser()
+    if not cache_path.is_file():
+        print(
+            f"ERROR: cache file not found: {cache_path}\n"
+            "  Run `kdp-label` on at least one image first, or pass --cache-path.",
+            file=sys.stderr,
+        )
+        return 1
+    data = VisionCache(cache_path).stats()
+    sink = _open_sink(args.output)
+    try:
+        sink.write(json.dumps(data, ensure_ascii=False, indent=2))
+        sink.write("\n")
+    finally:
+        if args.output != "-":
+            sink.close()
     return 0
 
 

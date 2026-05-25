@@ -145,3 +145,83 @@ def test_load_dotenv_overwrites_empty_env(tmp_path: Path, monkeypatch: pytest.Mo
     monkeypatch.setenv("MAYBE_EMPTY", "")  # PowerShell-like empty propagation
     _load_dotenv(env)
     assert os.environ["MAYBE_EMPTY"] == "from_dotenv"
+
+
+# ───────────────────────────────────────────────────────────────────────────
+# v0.4.3 — --stats flag (worklog/015)
+# ───────────────────────────────────────────────────────────────────────────
+
+
+def test_stats_argparse_flag() -> None:
+    parser = _build_parser()
+    args = parser.parse_args(["--stats"])
+    assert args.stats is True
+    assert args.image is None
+
+
+def test_stats_with_missing_cache_file_exits_1(
+    capsys: pytest.CaptureFixture[str], tmp_path: Path
+) -> None:
+    """--stats refuses to silently create an empty cache on a wrong path."""
+    rc = main(["--stats", "--cache-path", str(tmp_path / "absent.db")])
+    captured = capsys.readouterr()
+    assert rc == 1
+    assert "cache file not found" in captured.err.lower()
+
+
+def test_stats_dumps_json_for_existing_cache(
+    capsys: pytest.CaptureFixture[str], tmp_path: Path
+) -> None:
+    """Populated cache → JSON on stdout with the documented shape."""
+    from korean_doc_parser.vision.cache import CachedLabel, VisionCache
+
+    db = tmp_path / "cache.db"
+    cache = VisionCache(db)
+    cache.put(
+        CachedLabel(
+            sha256="aaa",
+            model="claude-haiku-4-5",
+            caption="cap",
+            image_type="chart",
+            confidence=0.9,
+            reasoning=None,
+            cost_krw=0.5,
+            cost_usd=0.0004,
+            input_tokens=500,
+            output_tokens=80,
+        )
+    )
+    rc = main(["--stats", "--cache-path", str(db)])
+    captured = capsys.readouterr()
+    assert rc == 0
+    data = json.loads(captured.out)
+    assert data["total_rows"] == 1
+    assert data["by_model"]["claude-haiku-4-5"]["rows"] == 1
+    assert "by_date" in data
+    assert "last_7_days_saved_krw" in data
+
+
+def test_stats_to_output_file(tmp_path: Path) -> None:
+    """--output redirects --stats JSON to a file."""
+    from korean_doc_parser.vision.cache import CachedLabel, VisionCache
+
+    db = tmp_path / "cache.db"
+    VisionCache(db).put(
+        CachedLabel(
+            sha256="z",
+            model="claude-sonnet-4-5",
+            caption="x",
+            image_type="other",
+            confidence=0.8,
+            reasoning=None,
+            cost_krw=1.0,
+            cost_usd=0.0007,
+            input_tokens=100,
+            output_tokens=50,
+        )
+    )
+    out = tmp_path / "stats.json"
+    rc = main(["--stats", "--cache-path", str(db), "--output", str(out)])
+    assert rc == 0
+    data = json.loads(out.read_text(encoding="utf-8"))
+    assert data["total_rows"] == 1

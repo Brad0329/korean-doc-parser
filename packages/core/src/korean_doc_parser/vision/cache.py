@@ -112,14 +112,45 @@ class VisionCache:
             conn.commit()
 
     def stats(self) -> dict[str, Any]:
-        """Quick health check — total rows + per-model breakdown."""
+        """Operational visibility — total / per-model / per-date breakdown.
+
+        Used by ``kdp-label --stats`` (v0.4.3, worklog/015). ``saved_krw`` is the
+        cumulative spend that was avoided on cache hits — counted at the moment
+        each row was written (i.e. the cost we would have paid had we *not*
+        cached). ``by_date`` groups rows by ``created_at`` (UTC date) so
+        operators can spot spikes; the ``by_model`` sub-breakdown inside each
+        date row matters when running Sonnet+Haiku side by side.
+        """
         with closing(sqlite3.connect(self._db_path)) as conn:
-            rows = conn.execute(
+            model_rows = conn.execute(
                 "SELECT model, COUNT(*), SUM(cost_krw) FROM vision_cache GROUP BY model"
             ).fetchall()
-        out: dict[str, Any] = {
+            date_rows = conn.execute(
+                "SELECT date(created_at) AS d, model, COUNT(*), SUM(cost_krw) "
+                "FROM vision_cache GROUP BY d, model ORDER BY d"
+            ).fetchall()
+            last_7 = conn.execute(
+                "SELECT COALESCE(SUM(cost_krw), 0.0) FROM vision_cache "
+                "WHERE date(created_at) >= date('now', '-6 days')"
+            ).fetchone()
+
+        by_date: dict[str, dict[str, Any]] = {}
+        for d, model, count, cost in date_rows:
+            entry = by_date.setdefault(d, {"rows": 0, "cost_krw": 0.0, "by_model": {}})
+            entry["rows"] += int(count)
+            entry["cost_krw"] = round(entry["cost_krw"] + (cost or 0.0), 2)
+            entry["by_model"][model] = {
+                "rows": int(count),
+                "cost_krw": round(cost or 0.0, 2),
+            }
+
+        return {
             "db_path": str(self._db_path),
-            "total_rows": sum(int(r[1]) for r in rows),
-            "by_model": {r[0]: {"rows": int(r[1]), "saved_krw": r[2] or 0.0} for r in rows},
+            "total_rows": sum(int(r[1]) for r in model_rows),
+            "total_saved_krw": round(sum((r[2] or 0.0 for r in model_rows), 0.0), 2),
+            "by_model": {
+                r[0]: {"rows": int(r[1]), "saved_krw": round(r[2] or 0.0, 2)} for r in model_rows
+            },
+            "by_date": by_date,
+            "last_7_days_saved_krw": round(last_7[0] if last_7 else 0.0, 2),
         }
-        return out
