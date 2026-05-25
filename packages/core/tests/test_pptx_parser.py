@@ -94,8 +94,9 @@ def test_pptx_with_table_matches_ground_truth(pptx_with_table: Path) -> None:
 
 
 def test_pptx_with_image_emits_placeholder(pptx_with_image: Path) -> None:
-    """v0.3 contract: images stay as ``![](filename)`` placeholders in markdown,
-    no bitmap extraction. v0.4+ will promote to ExtractedImage."""
+    """markitdown contract: images stay as ``![](filename)`` placeholders in
+    the markdown stream — the bitmap is *additionally* extracted to
+    ``ParseResult.images`` as of v0.4.4 (see the tests below)."""
     result = extract(pptx_with_image)
     assert "![" in result.markdown
     assert "이미지 포함 PPTX" in result.markdown
@@ -165,3 +166,58 @@ def test_extract_raises_parse_error_on_vanasso_corrupt_upload(
     """
     with pytest.raises(ParseError, match="Failed to parse PPTX"):
         extract(pptx_vanasso_corrupt)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# v0.4.4 — bitmap extraction via python-pptx (worklog/016)
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_pptx_with_image_extracts_one_bitmap(pptx_with_image: Path) -> None:
+    """Synthetic fixture has a single 64x64 red PNG on slide 1 — must surface
+    as one ``ExtractedImage`` with that exact size."""
+    result = extract(pptx_with_image)
+    assert len(result.images) == 1
+    img = result.images[0]
+    assert img.width == 64
+    assert img.height == 64
+    assert img.page_no == 1
+    assert img.order_in_page == 1
+    assert img.mime_type == "image/png"
+
+
+def test_pptx_with_image_bitmap_persisted_to_disk(pptx_with_image: Path) -> None:
+    """``file_path`` must point at a real tempfile that downstream Vision can
+    open. ``sha256`` must be a 64-char hex string."""
+    result = extract(pptx_with_image)
+    img = result.images[0]
+    assert Path(img.file_path).is_file()
+    assert Path(img.file_path).stat().st_size == img.size_bytes
+    assert len(img.sha256) == 64
+    assert all(c in "0123456789abcdef" for c in img.sha256)
+
+
+def test_pptx_simple_has_no_extracted_images(pptx_simple: Path) -> None:
+    """Text-only synthetic PPTX must yield an empty image list (not crash)."""
+    result = extract(pptx_simple)
+    assert result.images == []
+
+
+def test_pptx_multislide_has_no_extracted_images(pptx_multislide: Path) -> None:
+    """Multi-slide text-only PPTX — empty image list across all slides."""
+    result = extract(pptx_multislide)
+    assert result.images == []
+
+
+def test_pptx_with_image_bbox_in_emu(pptx_with_image: Path) -> None:
+    """bbox is ``(left, top, right, bottom)`` in PPTX EMU (1 inch = 914400).
+    The synthetic fixture places the image at Inches(1, 2) with Inches(1, 1)
+    size → (914400, 1828800, 1828800, 2743200)."""
+    result = extract(pptx_with_image)
+    bbox = result.images[0].bbox
+    assert bbox is not None
+    left, top, right, bottom = bbox
+    assert left == pytest.approx(914400)
+    assert top == pytest.approx(1828800)
+    assert right == pytest.approx(1828800)
+    assert bottom == pytest.approx(2743200)

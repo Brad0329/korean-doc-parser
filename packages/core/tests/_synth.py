@@ -780,7 +780,7 @@ def build_pptx_with_image(dest_dir: Path) -> Path:
         {
             "expected_format": "pptx",
             "expected_table_count": 0,
-            "expected_image_count": 0,  # v0.3: bitmap promotion deferred
+            "expected_image_count": 1,  # v0.4.4: python-pptx bitmap extraction
             "expected_keywords": ["이미지 포함 PPTX"],
             "expected_text_length_range": [10, 2000],
         },

@@ -37,7 +37,7 @@ from korean_doc_parser.parsers import hwpx as _hwpx
 from korean_doc_parser.parsers import pdf as _pdf
 from korean_doc_parser.parsers import pptx as _pptx
 
-__version__ = "0.4.3"
+__version__ = "0.4.4"
 
 __all__ = [
     "BaseParser",
