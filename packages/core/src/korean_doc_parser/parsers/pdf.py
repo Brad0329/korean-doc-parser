@@ -141,6 +141,7 @@ class PdfParser(BaseParser):
                     page_no=page_no,
                     section_no=None,
                     bbox=bbox,
+                    bbox_unit="px" if bbox is not None else "none",
                     order_in_page=img_idx,
                     text_before="",
                     text_after="",

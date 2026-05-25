@@ -21,11 +21,25 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from typing import Literal
 
 from korean_doc_parser.exceptions import UnsupportedFormatError
 
+BboxUnit = Literal["px", "emu", "none"]
+"""Unit of an :class:`ExtractedImage` bbox (v0.5.0, worklog/019 § 3-4).
+
+* ``"px"`` — pixels (PDF, native pdfplumber units)
+* ``"emu"`` — English Metric Unit (PPTX, 1 inch = 914400 EMU)
+* ``"none"`` — no bbox (HWP / HWPX / DOCX parsers)
+
+Future formats can add to this Literal as new bbox sources land. Downstream
+proximity / dedup logic uses this to decide whether two bboxes are
+comparable in the same numeric space.
+"""
+
 __all__ = [
     "BaseParser",
+    "BboxUnit",
     "ExtractedImage",
     "ParseMetadata",
     "ParseResult",
@@ -73,6 +87,18 @@ class ExtractedImage:
     page_no: int | None
     section_no: int | None
     bbox: tuple[float, float, float, float] | None
+    bbox_unit: BboxUnit
+    """Unit of ``bbox`` coordinates (v0.5.0, worklog/019 § 3-4).
+
+    * ``"px"`` — PDF (pdfplumber native pixels at the document's render DPI)
+    * ``"emu"`` — PPTX (English Metric Unit, 1 inch = 914400 EMU)
+    * ``"none"`` — bbox unavailable (HWP / HWPX / DOCX in current parsers).
+      When ``bbox is None`` this field must also be ``"none"``.
+
+    Downstream callers using ``pipeline.detect_caption_proximity`` must keep
+    image and text bboxes in the same unit per call — comparing px against
+    EMU produces meaningless distances.
+    """
     order_in_page: int
 
     # === surrounding text context ===

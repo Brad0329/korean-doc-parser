@@ -182,10 +182,12 @@ def _shape_to_image(shape: Picture, slide_no: int, order_in_slide: int) -> Extra
         fh.write(blob)
         file_path = fh.name
 
+    bbox = _safe_bbox(shape)
     return ExtractedImage(
         page_no=slide_no,
         section_no=None,
-        bbox=_safe_bbox(shape),
+        bbox=bbox,
+        bbox_unit="emu" if bbox is not None else "none",
         order_in_page=order_in_slide,
         text_before="",
         text_after="",
@@ -203,17 +205,11 @@ def _shape_to_image(shape: Picture, slide_no: int, order_in_slide: int) -> Extra
 
 
 def _safe_image_size(data: bytes) -> tuple[int, int]:
-    """PIL-based (width, height); returns (0, 0) for formats PIL can't open
-    (e.g. ``.wdp`` / HD Photo, which python-pptx hands out as raw bytes)."""
-    from io import BytesIO
+    """Thin re-export of the shared helper — kept as a local function to
+    preserve the existing call-site name without sprinkling imports."""
+    from korean_doc_parser.parsers._imageutil import safe_image_size
 
-    from PIL import Image
-
-    try:
-        with Image.open(BytesIO(data)) as img:
-            return int(img.width), int(img.height)
-    except Exception:
-        return 0, 0
+    return safe_image_size(data)
 
 
 def _safe_bbox(shape: Picture) -> tuple[float, float, float, float] | None:

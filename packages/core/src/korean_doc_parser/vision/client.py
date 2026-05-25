@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     from anthropic import Anthropic
     from anthropic.types import Message
 
-DEFAULT_MODEL: Final[str] = "claude-sonnet-4-5"
+DEFAULT_MODEL: Final[str] = "claude-haiku-4-5"
 DEFAULT_REASONING_THRESHOLD: Final[float] = 0.7
 DEFAULT_MAX_TOKENS_SHORT: Final[int] = 200
 DEFAULT_MAX_TOKENS_WITH_REASONING: Final[int] = 500

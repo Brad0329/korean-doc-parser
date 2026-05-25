@@ -8,7 +8,7 @@ korean_doc_parser_hwp`` is enough; downstream callers can keep using
 
 from korean_doc_parser_hwp.parser import HwpParser
 
-__version__ = "0.4.5"
+__version__ = "0.5.0"
 
 __all__ = [
     "HwpParser",

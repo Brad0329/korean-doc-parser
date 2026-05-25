@@ -190,6 +190,7 @@ def _extract_images(zf: zipfile.ZipFile) -> list[ExtractedImage]:
                 page_no=None,
                 section_no=None,
                 bbox=None,
+                bbox_unit="none",
                 order_in_page=idx,
                 text_before="",
                 text_after="",

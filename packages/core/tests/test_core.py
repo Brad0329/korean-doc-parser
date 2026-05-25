@@ -85,6 +85,7 @@ def test_extracted_image_metadata_bundle() -> None:
         page_no=2,
         section_no=None,
         bbox=(0.0, 0.0, 100.0, 50.0),
+        bbox_unit="px",
         order_in_page=0,
         text_before="앞 텍스트",
         text_after="뒷 텍스트",

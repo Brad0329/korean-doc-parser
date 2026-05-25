@@ -104,6 +104,7 @@ def _result(
                 page_no=None,
                 section_no=None,
                 bbox=None,
+                bbox_unit="none",
                 order_in_page=i,
                 text_before="",
                 text_after="",

@@ -140,3 +140,46 @@ def test_stats_last_7_days_includes_today(tmp_path: Path) -> None:
     cache.put(_make_label("today"))
     stats = cache.stats()
     assert stats["last_7_days_saved_krw"] == 8.25
+
+
+# ───────────────────────────────────────────────────────────────────────────
+# v0.5.0 — hit_count tracking (worklog/019 § 3-4)
+# ───────────────────────────────────────────────────────────────────────────
+
+
+def test_get_increments_hit_count(tmp_path: Path) -> None:
+    """Every cache hit bumps the row's ``hit_count`` so operators can compute
+    real hit rate from ``stats()``."""
+    cache = VisionCache(tmp_path / "cache.db")
+    cache.put(_make_label("sha_h"))
+    # Three sequential hits.
+    for _ in range(3):
+        assert cache.get("sha_h", "claude-sonnet-4-5") is not None
+    stats = cache.stats()
+    assert stats["total_hit_count"] == 3
+    assert stats["by_model"]["claude-sonnet-4-5"]["hit_count"] == 3
+
+
+def test_stats_hit_rate_is_zero_on_fresh_cache(tmp_path: Path) -> None:
+    cache = VisionCache(tmp_path / "cache.db")
+    stats = cache.stats()
+    assert stats["hit_rate"] == 0.0
+
+
+def test_stats_hit_rate_grows_with_hits(tmp_path: Path) -> None:
+    """``hit_rate = hits / (hits + rows)`` — 3 hits on 1 row = 0.75."""
+    cache = VisionCache(tmp_path / "cache.db")
+    cache.put(_make_label("only"))
+    for _ in range(3):
+        cache.get("only", "claude-sonnet-4-5")
+    stats = cache.stats()
+    assert stats["hit_rate"] == 0.75
+
+
+def test_get_miss_does_not_bump_hit_count(tmp_path: Path) -> None:
+    """Miss on an absent key must not increment any counter."""
+    cache = VisionCache(tmp_path / "cache.db")
+    cache.put(_make_label("known"))
+    assert cache.get("absent", "claude-sonnet-4-5") is None
+    stats = cache.stats()
+    assert stats["total_hit_count"] == 0

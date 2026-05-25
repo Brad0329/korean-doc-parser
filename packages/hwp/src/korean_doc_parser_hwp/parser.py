@@ -224,6 +224,7 @@ def _collect_bindata_images(bindata_dir: Path) -> list[ExtractedImage]:
                 page_no=None,
                 section_no=None,
                 bbox=None,
+                bbox_unit="none",
                 order_in_page=order,
                 text_before="",
                 text_after="",
@@ -243,21 +244,16 @@ def _collect_bindata_images(bindata_dir: Path) -> list[ExtractedImage]:
 
 
 def _safe_image_size(data: bytes) -> tuple[int, int]:
-    """PIL-based ``(width, height)``; ``(0, 0)`` if PIL can't decode.
+    """Thin re-export of the shared core helper (v0.5.0, worklog/019 § 3-4).
 
-    Same pattern as ``parsers/pptx._safe_image_size`` — kept duplicated here
-    because the hwp package can't import from pptx (cross-package), and core
-    doesn't yet host a shared image-utils module (v0.5+ refactor candidate).
+    hwp → core import is allowed by the package-boundary policy (CLAUDE.md
+    §"패키지 경계"); the reverse direction is not. This indirection keeps the
+    existing call-site name unchanged while removing the v0.4.x duplication
+    (worklog/017 § 4-4).
     """
-    from io import BytesIO
+    from korean_doc_parser.parsers._imageutil import safe_image_size
 
-    from PIL import Image
-
-    try:
-        with Image.open(BytesIO(data)) as img:
-            return int(img.width), int(img.height)
-    except Exception:
-        return 0, 0
+    return safe_image_size(data)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
