@@ -720,7 +720,7 @@ wheels = [
 
 [[package]]
 name = "korean-doc-parser"
-version = "0.5.0"
+version = "1.0.0"
 source = { editable = "packages/core" }
 dependencies = [
     { name = "pdfplumber" },
@@ -750,7 +750,7 @@ provides-extras = ["pptx", "vision"]
 
 [[package]]
 name = "korean-doc-parser-hwp"
-version = "0.5.0"
+version = "1.0.0"
 source = { editable = "packages/hwp" }
 dependencies = [
     { name = "beautifulsoup4" },
