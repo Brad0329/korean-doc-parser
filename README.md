@@ -1,159 +1,153 @@
 # korean-doc-parser
 
-> HWP / HWPX 를 포함한 한국어 문서를 마크다운 + 이미지 + 메타데이터로 변환하는 **사내 private 라이브러리**.
+> HWP / HWPX 를 포함한 한국어 문서를 마크다운 + 이미지 + 메타데이터 + Claude
+> Vision 라벨로 변환하는 **사내 private 라이브러리**.
 
-**상태:** **v0.2.1 출시** (2026-05-22). PDF / DOCX / HWP / HWPX 4포맷 지원.
-PPTX 는 v0.3 으로 이월 (markitdown 위임). **DOC / PPT 는 영구 미지원**
-(LibreOffice 도입 금지 결정 — `worklog/009_no_libreoffice_decision.md` 참고).
+**현재 버전:** **v0.5.0** (2026-05-25). 5포맷 (PDF / DOCX / HWP / HWPX /
+PPTX) 이미지 추출 + Vision CLI (`kdp-label`) + Pipeline 알고리즘 모듈
+(`korean_doc_parser.pipeline`).
+
+**DOC / PPT 영구 미지원** — LibreOffice 도입 영구 금지 (worklog/009).
 
 ---
 
-## 왜 이 라이브러리인가
+## 5분 안 시작
 
-markitdown / marker / docling 같은 글로벌 마크다운 변환기는 한국 문서의 핵심 포맷인 **HWP/HWPX** 를 지원하지 않습니다. `korean-doc-parser` 는 그 빈 영역을 채우는 사내 라이브러리로,
+```bash
+# 1. 설치 (사내 PyPI 미운영 → git 직접)
+pip install "git+https://github.com/Brad0329/korean-doc-parser.git@v0.5.0#subdirectory=packages/core"
+pip install "git+https://github.com/Brad0329/korean-doc-parser.git@v0.5.0#subdirectory=packages/hwp"  # HWP 처리 시 추가
+```
 
-- **현재 v0.2.1:** PDF / DOCX / **HWP** / **HWPX** (4포맷)
-- **v0.3 예정:** PPTX 1포맷 추가 → **5포맷 (최종)**
-- **2계층 아키텍처:** 순수 추출 엔진(`core`/`hwp`) + AI 라벨링/검수 파이프라인(`pipeline`, v0.4+)
-- **단일 파일 포터빌리티:** 코어는 외부 import 0건 — 다른 프로젝트에 단일 패키지로 도입 가능
-- **boundary 1종 원칙:** 의존성은 Python 패키지만. system 의존성(LibreOffice 등) 영구 금지
-- **5종 한국 도메인 타깃:** 입찰공고 / 법률검토 / 공문 / 전람회 PDF / 제안서
+```python
+# 2. 파싱
+import korean_doc_parser_hwp  # HWP 자동 등록 (필요 시)
+from korean_doc_parser import extract
+
+result = extract("입찰공고.hwp")  # PDF / DOCX / HWPX / PPTX 모두 동일
+print(result.markdown)              # 마크다운 본문
+print(result.tables[0].rows)        # 표 → list[list[str]]
+print(result.images[0].sha256, result.images[0].width)  # 이미지 메타
+```
+
+```bash
+# 3. Vision 라벨링 (옵션, [vision] extras)
+export ANTHROPIC_API_KEY=...        # 또는 .env 파일에 박음 (자동 로드)
+kdp-label image.png                  # 단일 이미지
+kdp-label --from-document doc.pdf    # 문서 전체 (5포맷 모두 동작)
+kdp-label --stats                    # cache 누적 비용 / hit_rate
+```
+
+호출자별 자세한 패턴은 [`docs/ko/recipes/`](docs/ko/recipes) 참고:
+- [`bidwatch.md`](docs/ko/recipes/bidwatch.md) — 입찰공고 파싱 + Vision + 자체 DB 저장
+- [`vanasso.md`](docs/ko/recipes/vanasso.md) — PPTX 업로드 + corrupt 핸들링
+
+---
+
+## 포맷 지원 현황
+
+| 포맷 | 텍스트 | 표 | 이미지 추출 | 비고 |
+|---|---|---|---|---|
+| **PDF** | ✅ pdfplumber | ✅ | ✅ pypdf 비트맵 (bbox=px) | v0.2.0 |
+| **DOCX** | ✅ python-docx | ✅ | ✅ ZIP 내 media (bbox=none) | v0.1.0 |
+| **HWPX** | ✅ XML 직접 파싱 | ✅ | ✅ ZIP 내 bindata (bbox=none) | v0.1.0 |
+| **HWP** | ✅ pyhwp + bs4 | ✅ | ✅ pyhwp bindata (bbox=none) | v0.4.5 |
+| **PPTX** | ✅ markitdown 위임 | (인라인) | ✅ python-pptx PICTURE shape (bbox=emu) | v0.4.4 |
+| ~~DOC~~ | ❌ 영구 미지원 | — | — | 사용자가 .docx 로 변환 후 업로드 |
+| ~~PPT~~ | ❌ 영구 미지원 | — | — | 사용자가 .pptx 로 변환 후 업로드 |
+
+→ **`kdp-label --from-document` 가 5포맷 모두 동작.** 호출자는 본인 자체 DB
+에 결과 저장 (라이브러리는 데이터 객체만 반환 — `docs/internal/known-limitations.md`
+의 § 정책 참고).
 
 ---
 
 ## 패키지 구조
 
-| 패키지 | 라이선스 | 상태 | 설명 |
-|---|---|---|---|
-| `korean-doc-parser` | MIT | **v0.2.0** | 메인 엔진 (PDF / DOCX / HWPX, PPTX/PPT/DOC v0.3 이월) |
-| `korean-doc-parser-hwp` | AGPL-3.0-or-later | **v0.2.0** | HWP 파서 (pyhwp 의존, 격리) |
-| `korean-doc-parser-pipeline` | MIT | skeleton | AI 라벨링 + 검수 큐 (Claude Vision) — v0.4+ |
+| 패키지 | 라이선스 | 설명 |
+|---|---|---|
+| `korean-doc-parser` | MIT | 메인 엔진 (PDF / DOCX / HWPX / PPTX) + Vision CLI + `pipeline` 알고리즘 모듈 |
+| `korean-doc-parser-hwp` | AGPL-3.0-or-later | HWP 파서 (pyhwp 격리) |
 
 ```
 korean-doc-parser/
 ├── packages/
-│   ├── core/          ← pip install korean-doc-parser
-│   ├── hwp/           ← pip install korean-doc-parser-hwp
-│   └── pipeline/      ← pip install korean-doc-parser-pipeline
-├── benchmarks/        ← 경쟁 라이브러리 비교 (Phase 0 산출물)
-├── worklog/           ← 마일스톤·의사결정 기록
-└── docs/ko/           ← 사용자 문서 (v0.1.0 출시 시 작성)
+│   ├── core/                   ← pip install korean-doc-parser
+│   │   └── src/korean_doc_parser/
+│   │       ├── core.py             # ParseResult / ExtractedImage / extract
+│   │       ├── parsers/            # pdf / docx / hwpx / pptx
+│   │       ├── vision/             # Claude Vision client + SQLite cache
+│   │       ├── cli/                # kdp-label
+│   │       └── pipeline/           # caption / confidence / doc_id (v0.5)
+│   └── hwp/                    ← pip install korean-doc-parser-hwp
+├── archive/                    ← historical (HANDOVER + 처리된 worklog)
+├── docs/
+│   ├── ko/recipes/             ← 호출자 사용 패턴
+│   └── internal/               ← 메인테이너용 (known-limitations)
+├── worklog/                    ← 현재 살아있는 결정 + 잠재 과제 출처
+├── benchmarks/                 ← 벤치마크 비교 + baseline
+└── scripts/                    ← eval_haiku 등 측정 자동화
 ```
 
 ---
 
-## 포맷별 처리 전략 (Phase 0 결정 + v0.2 갱신 + 2026-05-24 정책 반영)
+## Pipeline 알고리즘 (v0.5+)
 
-| 포맷 | 구현 방식 | 위치 | 상태 |
-|---|---|---|---|
-| **HWP** | 자체 구현 (pyhwp 단독, COM 폴백 옵션) | `packages/hwp` | **v0.2.0** |
-| **HWPX** | 자체 구현 (OOXML 유사 XML 직접 파싱) | `packages/core` | **v0.1.0** |
-| **PDF** | 자체 구현 (pdfplumber + pypdf 비트맵) — 표 인식 32개 vs markitdown 0개 | `packages/core` | **v0.2.0** (비트맵) |
-| **DOCX** | 자체 구현 (python-docx) — 속도 50배 우위 | `packages/core` | **v0.1.0** |
-| **PPTX** | markitdown 위임 (text 23K vs 자체 170) | `packages/core` | v0.3 |
-| ~~DOC~~ | **영구 미지원** — 사용자가 신버전 .docx 로 변환 후 업로드 | — | — |
-| ~~PPT~~ | **영구 미지원** — 사용자가 신버전 .pptx 로 변환 후 업로드 | — | — |
-
-DOC/PPT 는 LibreOffice 의존성 (200MB+ system binary) 회피 결정으로 영구
-미지원입니다. 자세한 근거 및 우회 방법은
-[`worklog/009_no_libreoffice_decision.md`](worklog/009_no_libreoffice_decision.md).
-
-자세한 의사결정 근거:
-- Phase 0: [`worklog/001_phase0_benchmark_decision.md`](worklog/001_phase0_benchmark_decision.md)
-- v0.2 의존성 매트릭스: [`worklog/006_v0.2_dependency_matrix.md`](worklog/006_v0.2_dependency_matrix.md)
-- LibreOffice 영구 금지: [`worklog/009_no_libreoffice_decision.md`](worklog/009_no_libreoffice_decision.md)
-
----
-
-## 설치 (사내 사용)
-
-사내 PyPI 미운영 → git 직접 설치.
-
-```bash
-# 코어만 (PDF / DOCX / HWPX)
-pip install "git+https://github.com/Brad0329/korean-doc-parser.git#subdirectory=packages/core"
-
-# HWP 포함 (+ AGPL extras)
-pip install "git+https://github.com/Brad0329/korean-doc-parser.git#subdirectory=packages/core"
-pip install "git+https://github.com/Brad0329/korean-doc-parser.git#subdirectory=packages/hwp"
-
-# 풀세트 (AI 라벨링까지, v0.4+ 예정)
-pip install "git+https://github.com/Brad0329/korean-doc-parser.git#subdirectory=packages/pipeline"
-```
-
----
-
-## 사용 예시 (v0.2.0)
+`korean_doc_parser.pipeline` 은 **stateless pure function 모음** — DB / 큐 /
+UI 없음, 호출자가 자체 DB 책임 (worklog/019 의 결정).
 
 ```python
-import korean_doc_parser_hwp  # noqa  ─ .hwp 라우팅 활성화 (옵트인)
-from korean_doc_parser import extract
-
-# PDF / DOCX / HWP / HWPX 모두 동일한 ParseResult 반환
-result = extract("입찰공고.hwp")
-
-print(result.markdown)          # 마크다운 본문
-print(result.metadata.format)   # "hwp"
-print(len(result.tables))       # 표 개수
-
-for tbl in result.tables:
-    print(tbl.rows)             # list[list[str]] — 사용자가 원하는 형식으로 직렬화
-
-# PDF 이미지는 v0.2.0 부터 실 비트맵 + sha256 (v0.1.x 의 placeholder 제거)
-result = extract("제안서.pdf")
-for img in result.images:
-    print(img.sha256, img.width, img.height, img.file_path)
+from korean_doc_parser.pipeline import (
+    compute_doc_id,            # path → sha256 64-char hex (primary key 후보)
+    weighted_confidence,       # regex 0.4 + proximity 0.2 + vision 0.4
+    detect_caption_regex,      # 한국어 (<그림 N>) + 영문 (Figure N) 패턴
+    detect_caption_proximity,  # bbox + text_blocks → 거리 기반 caption
+)
 ```
 
-지원 확장자 확인:
-
-```python
-import korean_doc_parser_hwp  # noqa
-from korean_doc_parser import supported_extensions
-print(supported_extensions())   # ('.docx', '.hwp', '.hwpx', '.pdf')
-```
-
-검수 파이프라인 (`korean-doc-parser-pipeline`) 은 v0.4+ 마일스톤에서 본격 구현됩니다.
+호출자 사용 예시는 [`docs/ko/recipes/bidwatch.md`](docs/ko/recipes/bidwatch.md).
 
 ---
 
-## 개발 환경
+## Vision 모델 정책 (v0.5.0)
 
-이 repo 는 [uv workspace](https://docs.astral.sh/uv/concepts/projects/workspaces/) 로 관리합니다.
+- **default = `claude-haiku-4-5`** — worklog/014 의 22건 실측에서 Sonnet
+  대비 비용 1/10.6, 품질 동등 (93% 한국어 caption), 더 정직한 confidence
+  calibration
+- 정밀 필요 시: `--model claude-sonnet-4-5` 명시
+- API 키: `.env` 의 `ANTHROPIC_API_KEY` 자동 로드 (Windows PowerShell 의
+  empty env var quirk 까지 처리)
+
+---
+
+## 개발 환경 (메인테이너 용)
 
 ```bash
-# clone 후 1회 셋업
 uv sync                              # 의존성 설치
 uv run pre-commit install            # git hook 등록
 
-# 일상 작업
-uv run pytest                        # 테스트
-uv run ruff check .                  # 린트
-uv run ruff format .                 # 포맷
-uv run mypy                          # 타입 체크 (strict)
-uv run pre-commit run --all-files    # 전체 훅 수동 실행
+uv run pytest                        # 232 test pass
+uv run ruff check .                  # lint
+uv run mypy packages/core/src packages/hwp/src packages/pipeline/src  # strict
 ```
 
-작업 규칙 (Git Conventional Commits / commit 게이트 / 라이브러리 SemVer 등) 은
-[`CLAUDE.md`](CLAUDE.md), 프로젝트 컨텍스트는 [`HANDOVER.md`](HANDOVER.md) 를 참고하세요.
+코딩 규칙 / commit 게이트 / SemVer 의무 등은 [`CLAUDE.md`](CLAUDE.md),
+v0.5.0 시점 살아있는 잠재 과제는 [`docs/internal/known-limitations.md`](docs/internal/known-limitations.md).
 
 ---
 
 ## 라이선스
 
-- **코어 / 파이프라인** (`packages/core`, `packages/pipeline`): **MIT** — [`LICENSE`](LICENSE)
-- **HWP extras** (`packages/hwp`): **AGPL-3.0-or-later** — [`packages/hwp/LICENSE`](packages/hwp/LICENSE)
+- **코어** (`packages/core`): **MIT** — [`LICENSE`](LICENSE)
+- **HWP extras** (`packages/hwp`): **AGPL-3.0-or-later** — pyhwp 의존성 격리
+- 외부 OSS 차용 attribution: [`NOTICE.md`](NOTICE.md)
 
-HWP 패키지가 pyhwp (AGPLv3+) 의존성 때문에 AGPL 격리되어 있습니다.
-HWP 를 쓰지 않으면 코어 MIT 만으로 충분합니다.
-
-> **참고:** v0.1.0 시점에 packages/hwp 를 GPL-3.0-or-later 로 표기했었으나
-> pyhwp 실 라이선스가 AGPLv3+ 임을 v0.2.0 출시 시 정정함. 격리 전략(extras-only)
-> 은 동일하게 작동.
+HWP 를 안 쓰면 코어 MIT 만으로 충분합니다.
 
 ---
 
 ## 슬로건
 
-> **"HWP-aware document-to-markdown library for Korean documents.**
-> A markitdown alternative with native HWP/HWPX support."
+> **"HWP-aware document-to-markdown library for Korean documents."**
+> A markitdown alternative with native HWP / HWPX bitmap extraction +
+> Korean-tuned Claude Vision labelling.

@@ -22,16 +22,24 @@
 
 ## Entries
 
-### (참고만 — 아직 실제 코드 차용은 없음)
+### v0.5.0 시점 — **실 차용 0건**
 
-#### kordoc — 검토 완료, 차용 항목 식별됨 (v0.2+ 에서 실제 차용 시 본 항목 활성화)
+v0.4.x ~ v0.5.0 동안 추가된 의존성 (anthropic SDK / python-pptx / markitdown /
+pyhwp / pypdf 등) 은 모두 **pip 의존성** (License compatibility 표의 OK 범위)
+으로 사용 — 알고리즘 / 코드 직접 차용 아님. caption regex 패턴 / 3중 가중
+신뢰도 / Vision 호출 wrapper 등은 **자체 설계** (worklog/011 § B, worklog/019
+§ 3).
+
+### kordoc — 검토 완료, 미차용 보존 기록
 
 - **Project**: [chrisryugj/kordoc](https://github.com/chrisryugj/kordoc)
 - **License**: MIT
-- **Adapted in**: _(미정 — 실제 차용 시 채움)_
-- **Commit / Version**: _(차용 시점에 기록)_
-- **Description**: HWP 5.x CFB 파싱 / AES-128 ECB 암호화 HWP 처리 / 손상 파일 복구 알고리즘 등 후보. 실제 포팅 시 항목별 분리 기록.
-- **Worklog**: [`worklog/004_kordoc_review.md`](worklog/004_kordoc_review.md)
+- **Adapted in**: _(미차용)_
+- **Description**: v0.2 시점에 HWP 5.x CFB 파싱 / AES-128 ECB 암호화 HWP /
+  손상 파일 복구 알고리즘이 후보로 검토됨. pyhwp 단독으로 합격 기준
+  통과하여 실제 차용은 미진입. **차용 시 본 항목 활성화** + Adapted in /
+  Commit / Worklog 채움.
+- **Worklog**: [`archive/worklog/004_kordoc_review.md`](archive/worklog/004_kordoc_review.md)
 
 ---
 
@@ -52,10 +60,10 @@
 
 ## License compatibility quick reference
 
-| Upstream license | core / pipeline / segmenter | hwp (GPL-3.0-or-later) |
+| Upstream license | core (MIT) | hwp (AGPL-3.0-or-later) |
 |---|---|---|
 | MIT / Apache-2.0 / BSD / ISC / Unlicense | ✅ OK (attribution only) | ✅ OK |
 | LGPL | ⚠️ Caution — usually OK for code adaptation, not for static linking; review per case | ✅ OK |
-| **GPL-3.0** / AGPL / SSPL | ❌ **Forbidden in MIT packages** | ✅ OK (already GPL-isolated) |
+| **GPL-3.0** / AGPL / SSPL | ❌ **Forbidden in core (MIT) package** | ✅ OK (already AGPL-isolated via pyhwp) |
 
 자세한 정책은 `CLAUDE.md` 참고.
