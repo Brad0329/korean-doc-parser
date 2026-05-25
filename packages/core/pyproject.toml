@@ -1,6 +1,6 @@
 [project]
 name = "korean-doc-parser"
-version = "0.3.0"
+version = "0.4.0"
 description = "HWP-aware document-to-markdown library for Korean documents"
 requires-python = ">=3.11"
 license = { text = "MIT" }
@@ -31,6 +31,14 @@ dependencies = [
 # Heavy ML stack: onnxruntime + numpy + magika ~80MB. Opt-in only.
 # Acceptance pending v0.3 N>=5 fixture evaluation (worklog/010).
 pptx = ["markitdown[pptx]>=0.1.5"]
+# Vision CLI (v0.4) — opt-in Claude Vision labelling via `kdp-label`.
+# anthropic SDK is small (~1MB) but needs an API key + network. Opt-in.
+# Decisions: worklog/011 (A.1 Sonnet, B.1 2-pass, C.4 sha256 cache, etc).
+vision = ["anthropic>=0.40"]
+
+[project.scripts]
+# v0.4 CLI — see worklog/011 § 9 for the full interface spec.
+kdp-label = "korean_doc_parser.cli.label:main"
 
 [project.urls]
 Homepage = "https://github.com/Brad0329/korean-doc-parser"
