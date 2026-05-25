@@ -55,3 +55,7 @@ SCRATCH.md
 
 # Sample documents (local-only; large + growing test fixtures)
 samples/
+
+# Eval run artifacts — Vision API 평가 raw 결과 (수치는 worklog 에만 박음)
+eval_v0.4.2/
+eval_v*/
