@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from dataclasses import asdict
@@ -40,7 +41,34 @@ DEFAULT_CACHE_PATH: str = "~/.kdp-cache.db"
 DEFAULT_MIN_PX: int = 100  # B.2 — bitmap >= 100x100 px
 
 
+def _load_dotenv(env_path: Path = Path(".env")) -> None:
+    """Tiny KEY=VALUE loader — no python-dotenv dependency.
+
+    Supports unquoted (``KEY=value``) and quoted (``KEY="value"`` /
+    ``KEY='value'``) forms. Lines starting with ``#`` are comments.
+
+    Existing ``os.environ`` values win **only if they are non-empty** —
+    PowerShell on Windows propagates empty-string env vars by default, and
+    ``setdefault`` would treat that as "already set" and silently ignore the
+    ``.env``. Explicit ``setx`` / shell exports still take precedence.
+    """
+    if not env_path.is_file():
+        return
+    for raw in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key = key.strip()
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+            value = value[1:-1]
+        if key and not os.environ.get(key, "").strip():
+            os.environ[key] = value
+
+
 def main(argv: list[str] | None = None) -> int:
+    _load_dotenv()  # opt-in: only acts if ./.env exists
     parser = _build_parser()
     args = parser.parse_args(argv)
 

@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import pytest
 from PIL import Image
 
-from korean_doc_parser.cli.label import _build_parser, main
+from korean_doc_parser.cli.label import _build_parser, _load_dotenv, main
 
 
 @pytest.fixture
@@ -96,3 +97,51 @@ def test_single_image_writes_json(
     assert data["image_type"] == "photo"
     assert data["cost_krw"] == 5.0
     assert data["cache_hit"] is False
+
+
+def test_load_dotenv_parses_simple_keys(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    env = tmp_path / ".env"
+    env.write_text(
+        "# 주석은 무시\n"
+        "FOO=bar\n"
+        'QUOTED="quoted value"\n'
+        "SINGLE='single quoted'\n"
+        "EMPTY_LINE_NEXT=\n"
+        "\n"
+        "WITH_EQUALS=key=val=more\n",
+        encoding="utf-8",
+    )
+    monkeypatch.delenv("FOO", raising=False)
+    monkeypatch.delenv("QUOTED", raising=False)
+    monkeypatch.delenv("SINGLE", raising=False)
+    monkeypatch.delenv("WITH_EQUALS", raising=False)
+    _load_dotenv(env)
+    assert os.environ["FOO"] == "bar"
+    assert os.environ["QUOTED"] == "quoted value"
+    assert os.environ["SINGLE"] == "single quoted"
+    assert os.environ["WITH_EQUALS"] == "key=val=more"
+
+
+def test_load_dotenv_missing_file_is_noop(tmp_path: Path) -> None:
+    """No .env → no error, no env mutation."""
+    _load_dotenv(tmp_path / "absent.env")  # must not raise
+
+
+def test_load_dotenv_does_not_overwrite_nonempty_env(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Explicit shell exports (non-empty) win over .env."""
+    env = tmp_path / ".env"
+    env.write_text("OVERRIDE_ME=from_dotenv\n", encoding="utf-8")
+    monkeypatch.setenv("OVERRIDE_ME", "from_shell")
+    _load_dotenv(env)
+    assert os.environ["OVERRIDE_ME"] == "from_shell"
+
+
+def test_load_dotenv_overwrites_empty_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Empty / whitespace env values are treated as unset (Windows quirk)."""
+    env = tmp_path / ".env"
+    env.write_text("MAYBE_EMPTY=from_dotenv\n", encoding="utf-8")
+    monkeypatch.setenv("MAYBE_EMPTY", "")  # PowerShell-like empty propagation
+    _load_dotenv(env)
+    assert os.environ["MAYBE_EMPTY"] == "from_dotenv"
