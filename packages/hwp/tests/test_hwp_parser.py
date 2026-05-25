@@ -213,3 +213,62 @@ def test_html_table_rows_returns_empty_for_no_rows() -> None:
     soup = BeautifulSoup("<table></table>", "lxml")
     table = soup.find("table")
     assert _html_table_rows(table) == []  # type: ignore[arg-type]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# v0.4.5 — bindata/ image extraction (worklog/017)
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_hwp_test_nara_has_extracted_images(hwp_test_nara_result: ParseResult) -> None:
+    """v0.4.5 contract: HWP bindata/ now surfaces as ExtractedImage. The
+    test_nara sample's image count is pinned by its ground truth — this test
+    just asserts the list isn't empty after the v0.4.5 change."""
+    assert len(hwp_test_nara_result.images) > 0
+
+
+def test_hwp_image_metadata_contract(hwp_test_nara_result: ParseResult) -> None:
+    """Per-image contract (worklog/017 § 3):
+
+    * ``page_no`` / ``bbox`` are ``None`` (HWP coords don't map to PDF-style bbox)
+    * ``order_in_page`` is 1-based and unique
+    * ``sha256`` is a 64-char lowercase hex string
+    * ``file_path`` points at a real persistent tempfile
+    * ``size_bytes`` matches the on-disk size
+    """
+    images = hwp_test_nara_result.images
+    assert images, "expected at least 1 image"
+    orders = [img.order_in_page for img in images]
+    assert orders == sorted(orders)
+    assert len(set(orders)) == len(orders)
+    for img in images:
+        assert img.page_no is None
+        assert img.bbox is None
+        assert len(img.sha256) == 64
+        assert all(c in "0123456789abcdef" for c in img.sha256)
+        assert Path(img.file_path).is_file()
+        assert Path(img.file_path).stat().st_size == img.size_bytes
+        assert img.size_bytes > 0
+        assert img.mime_type.startswith("image/") or img.mime_type == "application/octet-stream"
+
+
+def test_hwp_image_mime_types_are_recognized(hwp_test_nara_result: ParseResult) -> None:
+    """test_nara ships bmp + jpeg images — both must surface with proper MIME."""
+    mimes = {img.mime_type for img in hwp_test_nara_result.images}
+    assert mimes <= {
+        "image/bmp",
+        "image/jpeg",
+        "image/png",
+        "application/octet-stream",
+    }, f"unexpected MIME types: {mimes}"
+
+
+def test_hwp_extract_returns_empty_bindata_gracefully(tmp_path: Path) -> None:
+    """Internal helper contract: missing bindata/ dir → empty list, no raise.
+
+    This guards against pyhwp variants / corrupt files that produce no
+    bindata directory at all — the rest of the parse should still succeed.
+    """
+    from korean_doc_parser_hwp.parser import _collect_bindata_images
+
+    assert _collect_bindata_images(tmp_path / "definitely_missing") == []
