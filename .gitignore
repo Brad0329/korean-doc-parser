@@ -48,6 +48,7 @@ desktop.ini
 
 # Worklog markdown preview artifacts (auto-generated)
 worklog/*.html
+archive/worklog/*.html
 
 # Local notes
 notes.md
