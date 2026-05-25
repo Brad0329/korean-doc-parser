@@ -45,7 +45,6 @@ src = [
   "packages/pipeline/src",
 ]
 extend-exclude = [
-  "benchmarks/_legacy",
   "samples",
   ".venv",
 ]
